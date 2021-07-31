@@ -1,0 +1,54 @@
+﻿using System;
+using System.Threading.Tasks;
+using PRS.Commands;
+using PRS.Database;
+using PRS.Display;
+using PRS.FileHandle;
+
+namespace PRS
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            if (args == null || args.Length == 0)
+            {
+                DisplayHelp();
+                return;
+            }
+
+            string command = args[0];
+            IDisplay display = new LcdMonitor();
+            IDatabase database = new PrsDatabase();
+            IFileProvider file = new FileProvider();
+
+            if (CommandProvider.TryGetProvider(command,
+                                               display,
+                                               database,
+                                               file,
+                                               out ICommand value))
+            {
+                await value.RunAsync(args).ConfigureAwait(false);
+            }
+
+        }
+
+        static void DisplayHelp()
+        {
+            Console.WriteLine();
+
+            Console.WriteLine("Usage: prs [options] [argument]");
+            Console.WriteLine();
+            Console.WriteLine("Options:");
+            Console.WriteLine("scs     Show MS SQL Server connection string.");
+            Console.WriteLine("wcs     Write MS SQL Server connection string.");
+            Console.WriteLine("dds     Dump db schema to local machine.");
+            Console.WriteLine("ft      Find table (view).");
+            Console.WriteLine("fc      Find column.");
+            Console.WriteLine("ftc     Find column in some table (view).");
+            Console.WriteLine("fsp     Find stored procedure.");
+
+            Console.WriteLine();
+        }
+    }
+}
