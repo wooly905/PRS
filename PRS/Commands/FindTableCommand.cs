@@ -98,25 +98,11 @@ namespace PRS.Commands
 
             if (models.Count > 0)
             {
-                PrintModel(models);
+                CommandHelper.PrintModel(models, _display);
             }
             else
             {
                 _display.ShowInfo("Nothing found.");
-            }
-        }
-
-        private void PrintModel(List<TableModel> models)
-        {
-            _display.ShowInfo("TABLE_SCHEMA   TABLE_NAME                                TABLE_TYPE");
-
-            foreach (TableModel m in models)
-            {
-                string output = string.Format("{0,-15}{1,-42}{2,-10}",
-                                              m.TableSchema,
-                                              m.TableName,
-                                              m.TableType);
-                _display.ShowInfo(output);
             }
         }
     }

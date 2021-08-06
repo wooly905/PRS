@@ -55,6 +55,12 @@ namespace PRS.Commands
                 return true;
             }
 
+            if (string.Equals(input, "sc", StringComparison.OrdinalIgnoreCase))
+            {
+                command = new ShowAllColumnsCommand(display, fileProvider);
+                return true;
+            }
+
             command = null;
             return false;
         }

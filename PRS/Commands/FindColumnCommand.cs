@@ -103,30 +103,11 @@ namespace PRS.Commands
 
             if (models.Count > 0)
             {
-                PrintModel(models);
+                CommandHelper.PrintModel(models, _display);
             }
             else
             {
                 _display.ShowInfo("Nothing found.");
-            }
-        }
-
-        private void PrintModel(List<ColumnModel> models)
-        {
-            _display.ShowInfo("TABLE_SCHEMA   TABLE_NAME                      COLUMN_NAME                            ORDINAL_POSITION    COLUMN_DEFAULT     IS_NULLABLE     DATA_TYPE       MAX_LENGTH");
-
-            foreach (ColumnModel m in models)
-            {
-                string output = string.Format("{0,-15}{1,-32}{2,-39}{3,-20}{4,-19}{5,-16}{6,-16}{7,-10}",
-                                              m.TableSchema,
-                                              m.TableName,
-                                              m.ColumnName,
-                                              m.OrdinalPosition,
-                                              m.ColumnDefault,
-                                              m.IsNullable,
-                                              m.DataType,
-                                              m.CharacterMaximumLength);
-                _display.ShowInfo(output);
             }
         }
     }

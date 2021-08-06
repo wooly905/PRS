@@ -91,21 +91,11 @@ namespace PRS.Commands
 
             if (models.Count > 0)
             {
-                PrintModel(models);
+                CommandHelper.PrintModel(models, _display);
             }
             else
             {
                 _display.ShowInfo("Nothing found.");
-            }
-        }
-
-        private void PrintModel(List<string> models)
-        {
-            _display.ShowInfo("Stored Procedure Name");
-
-            foreach (string m in models)
-            {
-                _display.ShowInfo(m);
             }
         }
     }
