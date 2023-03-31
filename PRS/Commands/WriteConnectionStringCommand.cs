@@ -3,48 +3,47 @@ using System.Threading.Tasks;
 using PRS.Display;
 using PRS.FileHandle;
 
-namespace PRS.Commands
+namespace PRS.Commands;
+
+internal class WriteConnectionStringCommand : ICommand
 {
-    internal class WriteConnectionStringCommand : ICommand
+    private readonly IDisplay _display;
+    private readonly IFileProvider _fileProvider;
+
+    public WriteConnectionStringCommand(IDisplay display, IFileProvider fileProvider)
     {
-        private readonly IDisplay _display;
-        private readonly IFileProvider _fileProvider;
+        _display = display;
+        _fileProvider = fileProvider;
+    }
 
-        public WriteConnectionStringCommand(IDisplay display, IFileProvider fileProvider)
+    public async Task RunAsync(string[] args)
+    {
+        // verify args
+        if (args == null || args.Length != 2)
         {
-            _display = display;
-            _fileProvider = fileProvider;
+            _display.ShowError("Connection string argument is missing.");
+            return;
         }
 
-        public async Task RunAsync(string[] args)
+        string cs = args[1];
+
+        // verify schema file exists. if no, create schema file and write connection string.
+        if (Directory.Exists(Global.SchemaFileDirectory))
         {
-            // verify args
-            if (args == null || args.Length != 2)
+            if (File.Exists(Global.ConnectionStringFilePath))
             {
-                _display.ShowError("Connection string argument is missing.");
-                return;
+                File.Delete(Global.ConnectionStringFilePath);
             }
-
-            string cs = args[1];
-
-            // verify schema file exists. if no, create schema file and write connection string.
-            if (Directory.Exists(Global.SchemaFileDirectory))
-            {
-                if (File.Exists(Global.ConnectionStringFilePath))
-                {
-                    File.Delete(Global.ConnectionStringFilePath);
-                }
-            }
-            else
-            {
-                Directory.CreateDirectory(Global.SchemaFileDirectory);
-            }
-
-            IFileWriter writer = _fileProvider.GetFileWriter(Global.ConnectionStringFilePath);
-            await writer.WriteLineAsync(cs).ConfigureAwait(false);
-            writer.Dispose();
-
-            _display.ShowInfo("Connection string has been set.");
         }
+        else
+        {
+            Directory.CreateDirectory(Global.SchemaFileDirectory);
+        }
+
+        IFileWriter writer = _fileProvider.GetFileWriter(Global.ConnectionStringFilePath);
+        await writer.WriteLineAsync(cs).ConfigureAwait(false);
+        writer.Dispose();
+
+        _display.ShowInfo("Connection string has been set.");
     }
 }

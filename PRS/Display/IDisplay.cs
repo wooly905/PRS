@@ -1,9 +1,8 @@
-﻿namespace PRS.Display
-{
-    internal interface IDisplay
-    {
-        void ShowInfo(string message);
+﻿namespace PRS.Display;
 
-        void ShowError(string message);
-    }
+internal interface IDisplay
+{
+    void ShowInfo(string message);
+
+    void ShowError(string message);
 }

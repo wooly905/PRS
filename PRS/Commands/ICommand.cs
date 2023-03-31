@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace PRS.Commands
+namespace PRS.Commands;
+
+internal interface ICommand
 {
-    internal interface ICommand
-    {
-        public Task RunAsync(string[] args);
-    }
+    public Task RunAsync(string[] args);
 }

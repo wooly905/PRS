@@ -1,9 +1,8 @@
-﻿namespace PRS.FileHandle
-{
-    internal interface IFileProvider
-    {
-        public IFileReader GetFileReader(string file);
+﻿namespace PRS.FileHandle;
 
-        public IFileWriter GetFileWriter(string file);
-    }
+internal interface IFileProvider
+{
+    public IFileReader GetFileReader(string file);
+
+    public IFileWriter GetFileWriter(string file);
 }

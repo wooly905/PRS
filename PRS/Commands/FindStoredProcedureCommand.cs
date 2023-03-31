@@ -5,98 +5,97 @@ using System.Threading.Tasks;
 using PRS.Display;
 using PRS.FileHandle;
 
-namespace PRS.Commands
-{
-    internal class FindStoredProcedureCommand : ICommand
-    {
-        private readonly IDisplay _display;
-        private readonly IFileProvider _fileProvider;
+namespace PRS.Commands;
 
-        public FindStoredProcedureCommand(IDisplay display, IFileProvider fileProvider)
+internal class FindStoredProcedureCommand : ICommand
+{
+    private readonly IDisplay _display;
+    private readonly IFileProvider _fileProvider;
+
+    public FindStoredProcedureCommand(IDisplay display, IFileProvider fileProvider)
+    {
+        _display = display;
+        _fileProvider = fileProvider;
+    }
+
+    public async Task RunAsync(string[] args)
+    {
+        // verify args
+        if (args == null || args.Length != 2)
         {
-            _display = display;
-            _fileProvider = fileProvider;
+            _display.ShowError("Argument mismatch");
+            _display.ShowInfo("prs fsp [stored procedure name]");
+            return;
         }
 
-        public async Task RunAsync(string[] args)
+        // verify schema file exists. if not, show no schema file error and ask to run dump command.
+        if (!File.Exists(Global.SchemaFilePath))
         {
-            // verify args
-            if (args == null || args.Length != 2)
+            _display.ShowError("Schema doesn't exist locally. Please run dds command first.");
+            return;
+        }
+
+        // read schema file line by line and search table and column 
+        IFileReader reader = _fileProvider.GetFileReader(Global.SchemaFilePath);
+        bool found = false;
+
+        while (true)
+        {
+            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+            if (line == null)
             {
-                _display.ShowError("Argument mismatch");
-                _display.ShowInfo("prs fsp [stored procedure name]");
-                return;
+                // end of file
+                break;
             }
 
-            // verify schema file exists. if not, show no schema file error and ask to run dump command.
-            if (!File.Exists(Global.SchemaFilePath))
+            if (string.Equals(line, Global.StoredProcedureSectionName))
             {
-                _display.ShowError("Schema doesn't exist locally. Please run dds command first.");
-                return;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            _display.ShowInfo("Nothing found");
+            return;
+        }
+
+        // find targets 
+        List<string> models = new();
+
+        while (true)
+        {
+            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+
+            if (line == null)
+            {
+                // end of file
+                break;
             }
 
-            // read schema file line by line and search table and column 
-            IFileReader reader = _fileProvider.GetFileReader(Global.SchemaFilePath);
-            bool found = false;
-
-            while (true)
+            if (line.StartsWith("["))
             {
-                string line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                if (line == null)
-                {
-                    // end of file
-                    break;
-                }
-
-                if (string.Equals(line, Global.StoredProcedureSectionName))
-                {
-                    found = true;
-                    break;
-                }
+                // reach other section
+                break;
             }
 
-            if (!found)
+            if (line?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                _display.ShowInfo("Nothing found");
-                return;
+                models.Add(line);
             }
+        }
 
-            // find targets 
-            List<string> models = new();
+        reader.Dispose();
 
-            while (true)
-            {
-                string line = await reader.ReadLineAsync().ConfigureAwait(false);
-
-                if (line == null)
-                {
-                    // end of file
-                    break;
-                }
-
-                if (line.StartsWith("["))
-                {
-                    // reach other section
-                    break;
-                }
-
-                if (line?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    models.Add(line);
-                }
-            }
-
-            reader.Dispose();
-
-            if (models.Count > 0)
-            {
-                CommandHelper.PrintModel(models, _display);
-            }
-            else
-            {
-                _display.ShowInfo("Nothing found.");
-            }
+        if (models.Count > 0)
+        {
+            CommandHelper.PrintModel(models, _display);
+        }
+        else
+        {
+            _display.ShowInfo("Nothing found.");
         }
     }
 }

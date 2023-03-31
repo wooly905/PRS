@@ -2,32 +2,31 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace PRS.FileHandle
+namespace PRS.FileHandle;
+
+internal class SchemaFileWriter : IDisposable, IFileWriter
 {
-    internal class SchemaFileWriter : IDisposable, IFileWriter
+    private readonly StreamWriter _writer;
+
+    public SchemaFileWriter(string filePath)
     {
-        private readonly StreamWriter _writer;
-
-        public SchemaFileWriter(string filePath)
+        _writer = new StreamWriter(filePath)
         {
-            _writer = new StreamWriter(filePath)
-            {
-                AutoFlush = true
-            };
-        }
+            AutoFlush = true
+        };
+    }
 
-        public void Dispose()
+    public void Dispose()
+    {
+        if (_writer != null)
         {
-            if (_writer != null)
-            {
-                _writer.Close();
-                _writer.Dispose();
-            }
+            _writer.Close();
+            _writer.Dispose();
         }
+    }
 
-        public async Task WriteLineAsync(string input)
-        {
-            await _writer.WriteLineAsync(input).ConfigureAwait(false);
-        }
+    public async Task WriteLineAsync(string input)
+    {
+        await _writer.WriteLineAsync(input).ConfigureAwait(false);
     }
 }

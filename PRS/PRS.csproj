@@ -3,13 +3,15 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net6.0</TargetFramework>
-        <PublishSingleFile>true</PublishSingleFile>
-        <SelfContained>true</SelfContained>
-        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-        <PublishTrimmed>true</PublishTrimmed>
-        <PublishReadyToRun>true</PublishReadyToRun>
-        <DebugType>embedded</DebugType>
-        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>prs</ToolCommandName>
+        <PackageOutputPath>../nupkg</PackageOutputPath>
+
+        <PackageId>wooly905.prs</PackageId>
+        <PackageVersion>1.0.1.2</PackageVersion>
+        <Authors>Bruce Lee</Authors>
+        <Description>A command line tool to query table schema information in Microsoft SQL server</Description>
     </PropertyGroup>
 
     <ItemGroup>

@@ -1,9 +1,8 @@
-﻿namespace PRS.Database
+﻿namespace PRS.Database;
+
+public class TableModel
 {
-    public class TableModel
-    {
-        public string TableSchema { get; set; }
-        public string TableName { get; set; }
-        public string TableType { get; set; }
-    }
+    public string TableSchema { get; set; }
+    public string TableName { get; set; }
+    public string TableType { get; set; }
 }
