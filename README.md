@@ -1,22 +1,26 @@
 # PRS
 A table schema query tool of Microsoft SQL Server
 
+## Introduction:
+This is a tool to help you quickly search the names of objects (columns, tables, stored procedure) in Microsoft SQL server.
+This tool has been released as a dotnet global tool. You can install it by the following dotnet command,
+>dotnet tool install wooly905.prs -g
 
-### Introduction:
+The followings are the examples to show you how to use this tool.
 
-The following is the tables created by Hangfire.
+The following screenshots show you the tables and columns created by Hangfire.
 
 ![pic1](https://user-images.githubusercontent.com/18693681/129477044-0f98c657-97c3-4d98-8540-1f3ee8f4fe2c.JPG)
 ![pic2](https://user-images.githubusercontent.com/18693681/129477114-e508e069-b4d7-4694-a07f-3eb24f10ad78.JPG)
 ![pic3](https://user-images.githubusercontent.com/18693681/129477117-53aeb080-3579-4664-8fce-cddeb5f9979c.JPG)
-
-The screenshot above shows the tables created by Hangfire. It shows all tables in the Hangfire database and columns of Hangfire.Job and HangFire.State tables.
 
 ### How to use this tool:
 
 ![pic4](https://user-images.githubusercontent.com/18693681/129477875-8d3707f9-c85c-40e4-901e-b6ecdc0cf34a.JPG)
 
 ### Setup connection string (prs wcs)
+
+This is the first thing to do for this tool. Make sure your connection string is good with correct host URL, database name, username, and password.
 
 ![pic5](https://user-images.githubusercontent.com/18693681/129477397-7de49c08-5844-4938-a73c-bf93377af9c4.JPG)
 
@@ -25,6 +29,9 @@ The screenshot above shows the tables created by Hangfire. It shows all tables i
 ![pic6](https://user-images.githubusercontent.com/18693681/129477454-07529fde-7f86-49bc-83fd-573251a509d4.JPG)
 
 ### Dump schema to local machine (prs dds)
+
+This is the command to dump the database schema into your local user folder. 
+This command must be executed for any query command below.
 
 ![pic7](https://user-images.githubusercontent.com/18693681/129477524-83185aa4-871d-47c6-beed-0cf169d168bc.JPG)
 
