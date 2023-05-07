@@ -1,4 +1,6 @@
 [![prs](https://github.com/wooly905/PRS/actions/workflows/build.yml/badge.svg)](https://github.com/wooly905/PRS/actions/workflows/build.yml)
+[![NuGet latest version](https://badgen.net/nuget/v/wooly905.prs/latest)](https://nuget.org/packages/wooly905.prs)
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
 
 # PRS
 A simple command-line tool to query database schema in Microsoft SQL Server
