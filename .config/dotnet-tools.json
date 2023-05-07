@@ -1,12 +1,5 @@
 {
   "version": 1,
   "isRoot": true,
-  "tools": {
-    "wooly905.prs": {
-      "version": "1.0.1.2",
-      "commands": [
-        "prs"
-      ]
-    }
-  }
+  "tools": {}
 }
