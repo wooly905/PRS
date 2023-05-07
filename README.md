@@ -1,5 +1,7 @@
+[![prs](https://github.com/wooly905/PRS/actions/workflows/build.yml/badge.svg)](https://github.com/wooly905/PRS/actions/workflows/build.yml)
+
 # PRS
-A table schema query tool of Microsoft SQL Server
+A simple command-line tool to query database schema in Microsoft SQL Server
 
 ## Introduction:
 This is a tool to help you quickly search the names of objects (columns, tables, stored procedure) in Microsoft SQL server.
