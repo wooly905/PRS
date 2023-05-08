@@ -42,7 +42,7 @@ internal class FindTableCommand : ICommand
 
         while (true)
         {
-            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+            string line = await reader.ReadLineAsync();
 
             if (line == null)
             {
@@ -68,7 +68,7 @@ internal class FindTableCommand : ICommand
 
         while (true)
         {
-            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+            string line = await reader.ReadLineAsync();
 
             if (line == null)
             {
@@ -86,10 +86,12 @@ internal class FindTableCommand : ICommand
 
             if (splits[1]?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                TableModel m = new();
-                m.TableSchema = splits[0];
-                m.TableName = splits[1];
-                m.TableType = splits[2];
+                TableModel m = new()
+                {
+                    TableSchema = splits[0],
+                    TableName = splits[1],
+                    TableType = splits[2]
+                };
                 models.Add(m);
             }
         }

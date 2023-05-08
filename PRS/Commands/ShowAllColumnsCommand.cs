@@ -42,7 +42,7 @@ internal class ShowAllColumnsCommand : ICommand
 
         while (true)
         {
-            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+            string line = await reader.ReadLineAsync();
 
             if (line == null)
             {
@@ -68,7 +68,7 @@ internal class ShowAllColumnsCommand : ICommand
 
         while (true)
         {
-            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+            string line = await reader.ReadLineAsync();
 
             if (line == null)
             {
@@ -86,15 +86,17 @@ internal class ShowAllColumnsCommand : ICommand
 
             if (string.Equals(splits[1], args[1], StringComparison.OrdinalIgnoreCase))
             {
-                ColumnModel m = new();
-                m.TableSchema = splits[0];
-                m.TableName = splits[1];
-                m.ColumnName = splits[2];
-                m.OrdinalPosition = splits[3];
-                m.ColumnDefault = splits[4];
-                m.IsNullable = splits[5];
-                m.DataType = splits[6];
-                m.CharacterMaximumLength = splits[7];
+                ColumnModel m = new()
+                {
+                    TableSchema = splits[0],
+                    TableName = splits[1],
+                    ColumnName = splits[2],
+                    OrdinalPosition = splits[3],
+                    ColumnDefault = splits[4],
+                    IsNullable = splits[5],
+                    DataType = splits[6],
+                    CharacterMaximumLength = splits[7]
+                };
                 models.Add(m);
             }
         }

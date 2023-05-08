@@ -24,6 +24,6 @@ internal class SchemaFileReader : IDisposable, IFileReader
 
     public async Task<string> ReadLineAsync()
     {
-        return await _reader.ReadLineAsync().ConfigureAwait(false);
+        return await _reader.ReadLineAsync();
     }
 }

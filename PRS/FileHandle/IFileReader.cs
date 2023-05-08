@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 
-namespace PRS.FileHandle
+namespace PRS.FileHandle;
+
+public interface IFileReader
 {
-    public interface IFileReader
-    {
-        public Task<string> ReadLineAsync();
-        public void Dispose();
-    }
+    public Task<string> ReadLineAsync();
+    public void Dispose();
 }

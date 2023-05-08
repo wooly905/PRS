@@ -41,7 +41,7 @@ internal class FindStoredProcedureCommand : ICommand
 
         while (true)
         {
-            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+            string line = await reader.ReadLineAsync();
 
             if (line == null)
             {
@@ -67,7 +67,7 @@ internal class FindStoredProcedureCommand : ICommand
 
         while (true)
         {
-            string line = await reader.ReadLineAsync().ConfigureAwait(false);
+            string line = await reader.ReadLineAsync();
 
             if (line == null)
             {

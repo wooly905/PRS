@@ -41,7 +41,7 @@ internal class WriteConnectionStringCommand : ICommand
         }
 
         IFileWriter writer = _fileProvider.GetFileWriter(Global.ConnectionStringFilePath);
-        await writer.WriteLineAsync(cs).ConfigureAwait(false);
+        await writer.WriteLineAsync(cs);
         writer.Dispose();
 
         _display.ShowInfo("Connection string has been set.");

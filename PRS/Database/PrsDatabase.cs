@@ -7,26 +7,36 @@ namespace PRS.Database;
 
 internal class PrsDatabase : IDatabase
 {
-    //private readonly string _connectionString;
-
     public PrsDatabase()
     {
-      //  _connectionString = connectionString;
     }
 
     public async Task<IEnumerable<ColumnModel>> GetColumnModelsAsync(string connectionString)
     {
         using SqlConnection connection = new();
         connection.ConnectionString = connectionString;
-        await connection.OpenAsync().ConfigureAwait(false);
+        await connection.OpenAsync();
         using SqlCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, COLUMN_DEFAULT, IS_NULLABLE, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH FROM INFORMATION_SCHEMA.COLUMNS ORDER BY TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME";
+        command.CommandText = """
+                            SELECT TABLE_SCHEMA,
+                                TABLE_NAME,
+                                COLUMN_NAME,
+                                ORDINAL_POSITION,
+                                COLUMN_DEFAULT,
+                                IS_NULLABLE,
+                                DATA_TYPE,
+                                CHARACTER_MAXIMUM_LENGTH
+                            FROM INFORMATION_SCHEMA.COLUMNS
+                            ORDER BY TABLE_SCHEMA,
+                                TABLE_NAME,
+                                COLUMN_NAME
+                            """;
         command.CommandType = CommandType.Text;
-        using SqlDataReader reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+        using SqlDataReader reader = await command.ExecuteReaderAsync();
 
         List<ColumnModel> columns = new();
 
-        while (await reader.ReadAsync().ConfigureAwait(false))
+        while (await reader.ReadAsync())
         {
             ColumnModel m = new();
             m.TableSchema = reader[0].ToString();
@@ -50,15 +60,15 @@ internal class PrsDatabase : IDatabase
     {
         using SqlConnection connection = new();
         connection.ConnectionString = connectionString;
-        await connection.OpenAsync().ConfigureAwait(false);
+        await connection.OpenAsync();
         using SqlCommand command = connection.CreateCommand();
         command.CommandText = "SELECT Name FROM SYSOBJECTS WHERE type = 'P' AND category = 0 ORDER BY name";
         command.CommandType = CommandType.Text;
-        using SqlDataReader reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+        using SqlDataReader reader = await command.ExecuteReaderAsync();
 
         List<string> names = new();
 
-        while (await reader.ReadAsync().ConfigureAwait(false))
+        while (await reader.ReadAsync())
         {
             names.Add(reader[0].ToString());
         }
@@ -73,20 +83,22 @@ internal class PrsDatabase : IDatabase
     {
         using SqlConnection connection = new();
         connection.ConnectionString = connectionString;
-        await connection.OpenAsync().ConfigureAwait(false);
+        await connection.OpenAsync();
         using SqlCommand command = connection.CreateCommand();
         command.CommandText = "SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES ORDER BY TABLE_NAME";
         command.CommandType = CommandType.Text;
-        using SqlDataReader reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+        using SqlDataReader reader = await command.ExecuteReaderAsync();
 
         List<TableModel> tables = new();
 
-        while (await reader.ReadAsync().ConfigureAwait(false))
+        while (await reader.ReadAsync())
         {
-            TableModel m = new();
-            m.TableSchema = reader[0].ToString();
-            m.TableName = reader[1].ToString();
-            m.TableType = reader[2].ToString();
+            TableModel m = new()
+            {
+                TableSchema = reader[0].ToString(),
+                TableName = reader[1].ToString(),
+                TableType = reader[2].ToString()
+            };
             tables.Add(m);
         }
 

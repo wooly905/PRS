@@ -1,21 +1,40 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <Description>A simple command-line tool to query database schema in Microsoft SQL Server</Description>
+        <Authors>Bruce Lee</Authors>
+        <Product>prs</Product>
+        <NeutralLanguage>en-US</NeutralLanguage>
+        <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/wooly905/PRS</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/wooly905/PRS</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <LangVersion>11.0</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    </PropertyGroup>
 
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+
+        <IsPackable>true</IsPackable>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>prs</ToolCommandName>
         <PackageOutputPath>../nupkg</PackageOutputPath>
+        <RollForward>Major</RollForward>
 
         <PackageId>wooly905.prs</PackageId>
-        <PackageVersion>1.0.1.2</PackageVersion>
+        <PackageVersion>7.0.0</PackageVersion>
         <Authors>Bruce Lee</Authors>
-        <Description>A command line tool to query table schema information in Microsoft SQL server</Description>
+        <AssemblyName>prs</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.*" />
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.*" />
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>

@@ -28,7 +28,7 @@ static class Program
                                            file,
                                            out ICommand value))
         {
-            await value.RunAsync(args).ConfigureAwait(false);
+            await value.RunAsync(args);
         }
         else
         {

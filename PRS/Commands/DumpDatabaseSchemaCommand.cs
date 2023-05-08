@@ -36,7 +36,7 @@ internal class DumpDatabaseSchemaCommand : ICommand
         }
 
         // run database tool to get data
-        string connectionString = await CommandHelper.GetConnectionStringAsync(_display, _fileProvider).ConfigureAwait(false);
+        string connectionString = await CommandHelper.GetConnectionStringAsync(_display, _fileProvider);
 
         if (connectionString == null)
         {
@@ -44,17 +44,19 @@ internal class DumpDatabaseSchemaCommand : ICommand
             return;
         }
 
-        IEnumerable<TableModel> tables = await _database.GetTableModelsAsync(connectionString).ConfigureAwait(false);
-        IEnumerable<ColumnModel> columns = await _database.GetColumnModelsAsync(connectionString).ConfigureAwait(false);
-        IEnumerable<string> sps = await _database.GetStoredProcedureNamesAsync(connectionString).ConfigureAwait(false);
+        _display.ShowInfo("Starting to dump schema...");
+
+        IEnumerable<TableModel> tables = await _database.GetTableModelsAsync(connectionString);
+        IEnumerable<ColumnModel> columns = await _database.GetColumnModelsAsync(connectionString);
+        IEnumerable<string> sps = await _database.GetStoredProcedureNamesAsync(connectionString);
 
         // insert connection string and all data to file
         IFileWriter writer = _fileProvider.GetFileWriter(Path.Combine(Global.SchemaFileDirectory, Global.SchemaFileName));
 
-        await WriteConnectionStringAsync(writer, connectionString).ConfigureAwait(false);
-        await WriteTablesAsync(writer, tables).ConfigureAwait(false);
-        await WriteColumnsAsync(writer, columns).ConfigureAwait(false);
-        await WriteStoredProceduresAsync(writer, sps).ConfigureAwait(false);
+        await WriteConnectionStringAsync(writer, connectionString);
+        await WriteTablesAsync(writer, tables);
+        await WriteColumnsAsync(writer, columns);
+        await WriteStoredProceduresAsync(writer, sps);
 
         writer.Dispose();
 
@@ -63,39 +65,39 @@ internal class DumpDatabaseSchemaCommand : ICommand
 
     private async Task WriteConnectionStringAsync(IFileWriter writer, string connectionString)
     {
-        await writer.WriteLineAsync(Global.ConnectionStringSectionName).ConfigureAwait(false);
-        await writer.WriteLineAsync(connectionString).ConfigureAwait(false);
+        await writer.WriteLineAsync(Global.ConnectionStringSectionName);
+        await writer.WriteLineAsync(connectionString);
     }
 
     private async Task WriteTablesAsync(IFileWriter writer, IEnumerable<TableModel> tables)
     {
-        await writer.WriteLineAsync(Global.TableSectionName).ConfigureAwait(false);
+        await writer.WriteLineAsync(Global.TableSectionName);
 
         foreach (TableModel m in tables)
         {
             string s = $"{m.TableSchema},{m.TableName},{m.TableType}";
-            await writer.WriteLineAsync(s).ConfigureAwait(false);
+            await writer.WriteLineAsync(s);
         }
     }
 
     private async Task WriteColumnsAsync(IFileWriter writer, IEnumerable<ColumnModel> columns)
     {
-        await writer.WriteLineAsync(Global.ColumnSectionName).ConfigureAwait(false);
+        await writer.WriteLineAsync(Global.ColumnSectionName);
 
         foreach (ColumnModel m in columns)
         {
             string s = $"{m.TableSchema},{m.TableName},{m.ColumnName},{m.OrdinalPosition},{m.ColumnDefault},{m.IsNullable},{m.DataType},{m.CharacterMaximumLength}";
-            await writer.WriteLineAsync(s).ConfigureAwait(false);
+            await writer.WriteLineAsync(s);
         }
     }
 
     private async Task WriteStoredProceduresAsync(IFileWriter writer, IEnumerable<string> sps)
     {
-        await writer.WriteLineAsync(Global.StoredProcedureSectionName).ConfigureAwait(false);
+        await writer.WriteLineAsync(Global.StoredProcedureSectionName);
 
         foreach (string m in sps)
         {
-            await writer.WriteLineAsync(m).ConfigureAwait(false);
+            await writer.WriteLineAsync(m);
         }
     }
 }

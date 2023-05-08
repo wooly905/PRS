@@ -18,7 +18,7 @@ internal static class CommandHelper
         }
 
         IFileReader reader = fileProvider.GetFileReader(Global.ConnectionStringFilePath);
-        string output = await reader.ReadLineAsync().ConfigureAwait(false);
+        string output = await reader.ReadLineAsync();
         reader.Dispose();
 
         return output;

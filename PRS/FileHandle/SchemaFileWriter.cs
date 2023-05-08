@@ -27,6 +27,6 @@ internal class SchemaFileWriter : IDisposable, IFileWriter
 
     public async Task WriteLineAsync(string input)
     {
-        await _writer.WriteLineAsync(input).ConfigureAwait(false);
+        await _writer.WriteLineAsync(input);
     }
 }

@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 
-namespace PRS.FileHandle
+namespace PRS.FileHandle;
+
+public interface IFileWriter
 {
-    public interface IFileWriter
-    {
-        public Task WriteLineAsync(string input);
-        public void Dispose();
-    }
+    public Task WriteLineAsync(string input);
+    public void Dispose();
 }

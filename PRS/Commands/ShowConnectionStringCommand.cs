@@ -18,7 +18,7 @@ internal class ShowConnectionStringCommand : ICommand
     public async Task RunAsync(string[] args)
     {
         // verify schema file exists. if not, show no schema file error and ask to run dump command.
-        string output = await CommandHelper.GetConnectionStringAsync(_display, _fileProvider).ConfigureAwait(false);
+        string output = await CommandHelper.GetConnectionStringAsync(_display, _fileProvider);
 
         if (output == null)
         {
