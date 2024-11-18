@@ -1,23 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using PRS.Database;
-using PRS.Display;
+﻿using PRS.Display;
 using PRS.FileHandle;
 
 namespace PRS.Commands;
 
-internal class ShowAllColumnsCommand : ICommand
+internal class FindStoredProcedureCommand(IDisplay display, IFileProvider fileProvider) : ICommand
 {
-    private readonly IDisplay _display;
-    private readonly IFileProvider _fileProvider;
-
-    public ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvider)
-    {
-        _display = display;
-        _fileProvider = fileProvider;
-    }
+    private readonly IDisplay _display = display;
+    private readonly IFileProvider _fileProvider = fileProvider;
 
     public async Task RunAsync(string[] args)
     {
@@ -25,7 +14,7 @@ internal class ShowAllColumnsCommand : ICommand
         if (args == null || args.Length != 2)
         {
             _display.ShowError("Argument mismatch");
-            _display.ShowInfo("prs sc [table name]");
+            _display.ShowInfo("prs fsp [stored procedure name]");
             return;
         }
 
@@ -50,7 +39,7 @@ internal class ShowAllColumnsCommand : ICommand
                 break;
             }
 
-            if (string.Equals(line, Global.ColumnSectionName))
+            if (string.Equals(line, Global.StoredProcedureSectionName))
             {
                 found = true;
                 break;
@@ -64,7 +53,7 @@ internal class ShowAllColumnsCommand : ICommand
         }
 
         // find targets 
-        List<ColumnModel> models = new();
+        List<string> models = new();
 
         while (true)
         {
@@ -82,22 +71,9 @@ internal class ShowAllColumnsCommand : ICommand
                 break;
             }
 
-            string[] splits = line.Split(new char[] { ',' });
-
-            if (string.Equals(splits[1], args[1], StringComparison.OrdinalIgnoreCase))
+            if (line?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0)
             {
-                ColumnModel m = new()
-                {
-                    TableSchema = splits[0],
-                    TableName = splits[1],
-                    ColumnName = splits[2],
-                    OrdinalPosition = splits[3],
-                    ColumnDefault = splits[4],
-                    IsNullable = splits[5],
-                    DataType = splits[6],
-                    CharacterMaximumLength = splits[7]
-                };
-                models.Add(m);
+                models.Add(line);
             }
         }
 
@@ -112,5 +88,4 @@ internal class ShowAllColumnsCommand : ICommand
             _display.ShowInfo("Nothing found.");
         }
     }
-
 }
