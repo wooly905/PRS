@@ -67,6 +67,7 @@ jobs:
         BRANCH_NAME: ${{ steps.update_version.outputs.branch_name }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        # Disable "Require approvals"/"Require review from Code Owners" in Settings/Branches.
         gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head "${{ env.BRANCH_NAME }}"
         # Allow auto-merge feature must be enabled in the repository settings
         gh pr merge --auto --merge --delete-branch
