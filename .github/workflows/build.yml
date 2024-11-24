@@ -38,36 +38,33 @@ jobs:
       shell: pwsh
       run: |
         $xml_file = "./src/prs.csproj"
-
-        # Read the current PackageVersion
+    
         $package_version = (Select-String -Path $xml_file -Pattern '<PackageVersion>(.*?)<\/PackageVersion>' -AllMatches).Matches.Groups[1].Value
         Write-Host "Current PackageVersion: $package_version"
-
-        # Split the version and increment the revision
+    
         $version_parts = $package_version -split '\.'
         $pmajor, $pminor, $pbuild, $prevision = $version_parts
         $prevision = [int]$prevision + 1
         $new_package_version = "$pmajor.$pminor.$pbuild.$prevision"
         Write-Host "New PackageVersion: $new_package_version"
-
-        # Update the PackageVersion in the csproj file
+    
         (Get-Content $xml_file) -replace '<PackageVersion>.*<\/PackageVersion>', "<PackageVersion>$new_package_version</PackageVersion>" | Set-Content $xml_file
-
-        Write-Host "Revision updated."
-
+    
+        echo "BRANCH_NAME=update-package-version-$prevision" >> $GITHUB_ENV
+    
     - name: Create Temporary Branch
       run: |
         git config user.name "prs"
         git config user.email ""
-        $branch_name = "update-package-version-$prevision"
-        git checkout -b $branch_name
+        git checkout -b ${{ env.BRANCH_NAME }}
         git add .
-        git commit -m "Update revision number to $new_package_version"
-        git push origin $branch_name
-
+        git commit -m "Update revision number to ${{ env.new_package_version }}"
+        git push origin ${{ env.BRANCH_NAME }}
+    
     - name: Merge Temporary Branch
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head $branch_name
+        gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head ${{ env.BRANCH_NAME }}
         gh pr merge --merge --auto --delete-branch
+
