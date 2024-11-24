@@ -69,4 +69,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head update-package-version
-        gh pr --merge --auto --delete-branch
+        gh pr merge --merge --auto --delete-branch
