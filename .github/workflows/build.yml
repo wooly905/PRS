@@ -68,4 +68,5 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head "${{ env.BRANCH_NAME }}"
-        gh pr merge --admin --merge --delete-branch
+        # Allow auto-merge feature must be enabled in the repository settings
+        gh pr merge --atuo --merge --delete-branch
