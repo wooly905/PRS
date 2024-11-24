@@ -35,26 +35,30 @@ jobs:
     #  run: dotnet test
 
     - name: Increase revision number
+      shell: pwsh
       run: |
-        xml_file="./src/prs.csproj"
-        package_version=$(grep -oPm1 "(?<=<PackageVersion>)[^<]+" $xml_file)
+        $xml_file = "./src/prs.csproj"
 
-        echo "Current PackageVersion: $package_version"
+        # Read the current PackageVersion
+        $package_version = (Select-String -Path $xml_file -Pattern '<PackageVersion>(.*?)<\/PackageVersion>' -AllMatches).Matches.Groups[1].Value
+        Write-Host "Current PackageVersion: $package_version"
 
-        IFS='.' read -r pmajor pminor pbuild prevision <<< "$package_version"
-        prevision=$((prevision + 1))
-        new_package_version="$pmajor.$pminor.$pbuild.$prevision"
+        # Split the version and increment the revision
+        $version_parts = $package_version -split '\.'
+        $pmajor, $pminor, $pbuild, $prevision = $version_parts
+        $prevision = [int]$prevision + 1
+        $new_package_version = "$pmajor.$pminor.$pbuild.$prevision"
+        Write-Host "New PackageVersion: $new_package_version"
 
-        echo "New PackageVersion: $new_package_version"
+        # Update the PackageVersion in the csproj file
+        (Get-Content $xml_file) -replace '<PackageVersion>.*<\/PackageVersion>', "<PackageVersion>$new_package_version</PackageVersion>" | Set-Content $xml_file
 
-        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>$new_package_version<\/PackageVersion>/" $xml_file
+        Write-Host "Revision updated."
 
-        echo "Revision updated."
-
+        # Commit and push the changes
         git config user.name "prs"
         git config user.email ""
         git add .
         git commit -m "Update revision number to $new_package_version"
         git push
-        echo "Revision numner update completed."
-      shell: bash
+        Write-Host "Revision number update completed."
