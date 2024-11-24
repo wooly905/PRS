@@ -59,15 +59,15 @@ jobs:
       run: |
         git config user.name "prs"
         git config user.email ""
-        $branch-name = "update-package-version-$prevision"
-        git checkout -b $branch-name
+        $branc_name = "update-package-version-$prevision"
+        git checkout -b $branch_name
         git add .
         git commit -m "Update revision number to $new_package_version"
-        git push origin $branch-name
+        git push origin $branch_name
 
     - name: Merge Temporary Branch
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head $branch-name
+        gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head $branch_name
         gh pr merge --merge --auto --delete-branch
