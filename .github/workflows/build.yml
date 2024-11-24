@@ -27,8 +27,10 @@ jobs:
         dotnet-version: 8.0.x
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
-    - name: Build the application
-      run: dotnet build -c Release
+    - name: Restore and build the application
+      run: |
+        dotnet restore
+        dotnet build -c Release --no-restore
 
     # Execute all unit tests in the solution
     #- name: Execute unit tests
@@ -39,26 +41,35 @@ jobs:
       run: |
         $xml_file = "./src/prs.csproj"
     
+        # Read the current PackageVersion
         $package_version = (Select-String -Path $xml_file -Pattern '<PackageVersion>(.*?)<\/PackageVersion>' -AllMatches).Matches.Groups[1].Value
         Write-Host "Current PackageVersion: $package_version"
     
+        # Split the version and increment the revision
         $version_parts = $package_version -split '\.'
         $pmajor, $pminor, $pbuild, $prevision = $version_parts
         $prevision = [int]$prevision + 1
         $new_package_version = "$pmajor.$pminor.$pbuild.$prevision"
         Write-Host "New PackageVersion: $new_package_version"
     
+        # Update the PackageVersion in the csproj file
         (Get-Content $xml_file) -replace '<PackageVersion>.*<\/PackageVersion>', "<PackageVersion>$new_package_version</PackageVersion>" | Set-Content $xml_file
     
+        Write-Host "Revision updated."
+    
+        # Set branch_name and new_package_version as environment variables for later steps
         echo "BRANCH_NAME=update-package-version-$prevision" >> $GITHUB_ENV
+        echo "NEW_PACKAGE_VERSION=$new_package_version" >> $GITHUB_ENV
     
     - name: Create Temporary Branch
       run: |
         git config user.name "prs"
         git config user.email ""
+        
+        # Use the BRANCH_NAME environment variable to create the branch
         git checkout -b ${{ env.BRANCH_NAME }}
         git add .
-        git commit -m "Update revision number to ${{ env.new_package_version }}"
+        git commit -m "Update revision number to ${{ env.NEW_PACKAGE_VERSION }}"
         git push origin ${{ env.BRANCH_NAME }}
     
     - name: Merge Temporary Branch
@@ -67,4 +78,5 @@ jobs:
       run: |
         gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head ${{ env.BRANCH_NAME }}
         gh pr merge --merge --auto --delete-branch
+
 
