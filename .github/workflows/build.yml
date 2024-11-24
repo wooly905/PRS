@@ -29,7 +29,32 @@ jobs:
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Build the application
       run: dotnet build -c Release
- 
+
     # Execute all unit tests in the solution
     #- name: Execute unit tests
     #  run: dotnet test
+
+    - name: Increase revision number
+      run: |
+        xml_file="./src/prs.csproj"
+        package_version=$(grep -oPm1 "(?<=<PackageVersion>)[^<]+" $xml_file)
+
+        echo "Current PackageVersion: $package_version"
+
+        IFS='.' read -r pmajor pminor pbuild prevision <<< "$package_version"
+        prevision=$((prevision + 1))
+        new_package_version="$pmajor.$pminor.$pbuild.$prevision"
+
+        echo "New PackageVersion: $new_package_version"
+
+        sed -i "s/<PackageVersion>.*<\/PackageVersion>/<PackageVersion>$new_package_version<\/PackageVersion>/" $xml_file
+
+        echo "Revision updated."
+
+        git config user.name "prs"
+        git config user.email ""
+        git add .
+        git commit -m "Update revision number to $new_package_version"
+        git push
+        echo "Revision numner update completed."
+      shell: bash
