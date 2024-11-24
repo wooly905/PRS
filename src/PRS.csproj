@@ -27,7 +27,7 @@
         <RollForward>Major</RollForward>
 
         <PackageId>wooly905.prs</PackageId>
-        <PackageVersion>8.0.0</PackageVersion>
+        <PackageVersion>8.0.0.1</PackageVersion>
         <Authors>Bruce Lee</Authors>
         <AssemblyName>prs</AssemblyName>
     </PropertyGroup>
