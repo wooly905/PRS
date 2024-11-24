@@ -1,0 +1,70 @@
+name: prs-release
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: windows-latest  # For a list of available runner types, refer to
+                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+
+    env:
+      Solution_Name: PRS.sln
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET 8.0
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Build
+      run: dotnet build -c Release
+
+    - name: Generate release files
+      run: dotnet publish -r win-x64 -c Release --sc true -o ./publish ./src/PRS.csproj
+      
+    - name: Read Release Notes and msctl version
+      id: read_release_notes
+      run: |
+        BODY_CONTENT=$(cat ./.github/workflows/ReleaseNote.md)
+        echo "body_content<<EOF" >> $GITHUB_ENV
+        echo "$BODY_CONTENT" >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+        xml_file="./src/PRS.csproj"
+        version=$(grep -oPm1 "(?<=<PackageVersion>)[^<]+" $xml_file)
+        echo "Current Package Version: $version"
+        echo "PackageVersion=$version" >> $GITHUB_ENV
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.PackageVersion  }}
+        release_name: ${{ env.PackageVersion  }}
+        body: ${{ env.body_content }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: PRS/upload-release-asset@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} 
+        asset_path: ./publish/prs.exe
+        asset_name: prs.exe
+        asset_content_type: application/octet-stream
+
+    - name: Setup .NET global tool
+      id: setup-global-tool
+      run: |
+        dotnet tool update --global PRS
