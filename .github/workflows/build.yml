@@ -62,19 +62,10 @@ jobs:
         git commit -m "Update revision number to ${{ env.NEW_PACKAGE_VERSION }}"
         git push origin "${{ env.BRANCH_NAME }}"
 
-    - name: Approve Pull Request
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      shell: pwsh
-      run: |
-        $pr_number = gh pr list --head "${{ env.BRANCH_NAME }}" --json number --jq '.[0].number'
-        gh pr review $pr_number --approve
-    
     - name: Merge Temporary Branch
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH_NAME: ${{ steps.update_version.outputs.branch_name }}
-      shell: pwsh
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        $pr_number = gh pr list --head "${{ env.BRANCH_NAME }}" --json number --jq '.[0].number'
-        gh pr merge $pr_number --merge --delete-branch
+        gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head "${{ env.BRANCH_NAME }}"
+        gh pr merge --merge --delete-branch
