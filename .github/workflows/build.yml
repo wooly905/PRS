@@ -60,8 +60,11 @@ jobs:
         git push origin $env:branch_name
 
     - name: Merge Temporary Branch
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH_NAME: ${{ env.branch_name }} 
       shell: pwsh
       run: |
-        # Ensure GitHub CLI is installed and authenticated
+        gh auth setup-git
         gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head $env:branch_name
         gh pr merge --auto --merge --delete-branch
