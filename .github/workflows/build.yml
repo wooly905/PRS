@@ -49,6 +49,10 @@ jobs:
         echo "new_package_version=$new_package_version" >> $env:GITHUB_ENV
 
     - name: Create Temporary Branch
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        BRANCH_NAME: ${{ env.branch_name }} 
+        NEW_PACKAGE_VERSION: ${{ env.new_package_version }}
       shell: pwsh
       run: |
         git config user.name "prs"
