@@ -72,4 +72,3 @@ jobs:
         gh auth setup-git
         gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head $env:branch_name
         gh pr merge --auto --merge --delete-branch
-
