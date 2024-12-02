@@ -34,7 +34,6 @@ jobs:
       shell: pwsh
       run: |
         $xml_file = "./src/prs.csproj"
-    
         $package_version = (Select-String -Path $xml_file -Pattern '<PackageVersion>(.*?)<\/PackageVersion>' -AllMatches).Matches.Groups[1].Value
         Write-Host "Current PackageVersion: $package_version"
     
@@ -46,41 +45,23 @@ jobs:
     
         (Get-Content $xml_file) -replace '<PackageVersion>.*<\/PackageVersion>', "<PackageVersion>$new_package_version</PackageVersion>" | Set-Content $xml_file
 
-        echo "branch_name=update-package-version-$prevision" >> $GITHUB_ENV
-        echo "new_package_version=$new_package_version" >> $GITHUB_ENV
+        echo "branch_name=update-package-version-$prevision" >> $env:GITHUB_ENV
+        echo "new_package_version=$new_package_version" >> $env:GITHUB_ENV
 
     - name: Create Temporary Branch
-      env:
-        BRANCH_NAME: ${{ steps.update_version.outputs.branch_name }}
-        NEW_PACKAGE_VERSION: ${{ steps.update_version.outputs.new_package_version }}
+      shell: pwsh
       run: |
         git config user.name "prs"
         git config user.email "prs@example.com"
         
-        git checkout -b "${{ env.branch_name }}"
+        git checkout -b $env:branch_name
         git add .
-        git commit -m "Update revision number to ${{ env.new_package_version }}"
-        git push origin "${{ env.branch_name }}"
+        git commit -m "Update revision number to $env:new_package_version"
+        git push origin $env:branch_name
 
-    - name: Create Pull Request
-      env:
-        BRANCH_NAME: ${{ steps.update_version.outputs.branch_name }}
+    - name: Merge Temporary Branch
+      shell: pwsh
       run: |
-        gh pr create \
-          --title "Update revision number" \
-          --body "Automated update of PackageVersion" \
-          --base main \
-          --head "${{ env.branch_name }}"
-
-    - name: Merge Pull Request
-      run: |
-        pr_url=$(gh pr view --json url -q .url)
-        echo "Pull Request URL: $pr_url"
-
-        # Attempt auto-merge
-        if gh pr merge --auto --merge --delete-branch; then
-          echo "Auto-merge completed successfully."
-        else
-          echo "Auto-merge failed. Attempting manual merge."
-          gh pr merge --merge --delete-branch
-        fi
+        # Ensure GitHub CLI is installed and authenticated
+        gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head $env:branch_name
+        gh pr merge --auto --merge --delete-branch
