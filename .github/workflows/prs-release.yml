@@ -31,7 +31,7 @@ jobs:
     - name: Read Release Notes and version
       id: read_release_notes
       run: |
-        BODY_CONTENT=$(cat ./.github/workflows/ReleaseNote.md)
+        BODY_CONTENT=$(type ./.github/workflows/ReleaseNote.md)
         echo "body_content<<EOF" >> $GITHUB_ENV
         echo "$BODY_CONTENT" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
