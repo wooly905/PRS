@@ -28,7 +28,7 @@ jobs:
     - name: Generate release files
       run: dotnet publish -r win-x64 -c Release --sc true -o ./publish ./src/PRS.csproj
       
-    - name: Read Release Notes and msctl version
+    - name: Read Release Notes and version
       id: read_release_notes
       run: |
         BODY_CONTENT=$(cat ./.github/workflows/ReleaseNote.md)
@@ -52,17 +52,6 @@ jobs:
         body: ${{ env.body_content }}
         draft: false
         prerelease: false
-
-    - name: Upload Release Asset
-      id: upload-release-asset 
-      uses: PRS/upload-release-asset@main
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} 
-        asset_path: ./publish/prs.exe
-        asset_name: prs.exe
-        asset_content_type: application/octet-stream
 
     - name: Setup .NET global tool
       id: setup-global-tool
