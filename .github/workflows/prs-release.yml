@@ -27,31 +27,6 @@ jobs:
 
     - name: Generate release files
       run: dotnet publish -r win-x64 -c Release --sc true -o ./publish ./src/PRS.csproj
-      
-    - name: Read Release Notes and version
-      id: read_release_notes
-      run: |
-        BODY_CONTENT=$(type ./.github/workflows/ReleaseNote.md)
-        echo "body_content<<EOF" >> $GITHUB_ENV
-        echo "$BODY_CONTENT" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-
-        xml_file="./src/PRS.csproj"
-        version=$(grep -oPm1 "(?<=<PackageVersion>)[^<]+" $xml_file)
-        echo "Current Package Version: $version"
-        echo "PackageVersion=$version" >> $GITHUB_ENV
-
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ env.PackageVersion  }}
-        release_name: ${{ env.PackageVersion  }}
-        body: ${{ env.body_content }}
-        draft: false
-        prerelease: false
 
     - name: Setup .NET global tool
       id: setup-global-tool
