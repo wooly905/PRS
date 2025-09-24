@@ -12,23 +12,28 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 
     public async Task RunAsync(string[] args)
     {
-        // verify default directory. create the directory.
-        if (Directory.Exists(Global.SchemaFileDirectory))
-        {
-            if (File.Exists(Path.Combine(Global.SchemaFileDirectory, Global.SchemaFileName)))
-            {
-                File.Delete(Path.Combine(Global.SchemaFileDirectory, Global.SchemaFileName));
-            }
-        }
-        else
-        {
-            Directory.CreateDirectory(Global.SchemaFileDirectory);
-        }
+		// verify args
+		if (args == null || args.Length != 2)
+		{
+			_display.ShowError("Argument mismatch");
+			_display.ShowInfo("prs dds [schema name]");
+			return;
+		}
+
+		// ensure directories exist
+		if (!Directory.Exists(Global.SchemaFileDirectory))
+		{
+			Directory.CreateDirectory(Global.SchemaFileDirectory);
+		}
+		if (!Directory.Exists(Global.SchemasDirectory))
+		{
+			Directory.CreateDirectory(Global.SchemasDirectory);
+		}
 
         // run database tool to get data
-        string connectionString = await CommandHelper.GetConnectionStringAsync(_display, _fileProvider);
+		string connectionString = await CommandHelper.GetConnectionStringAsync(_display, _fileProvider);
 
-        if (connectionString == null)
+		if (string.IsNullOrWhiteSpace(connectionString))
         {
             _display.ShowError("Connection string is not found.");
             return;
@@ -40,17 +45,31 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
         IEnumerable<ColumnModel> columns = await _database.GetColumnModelsAsync(connectionString);
         IEnumerable<string> sps = await _database.GetStoredProcedureNamesAsync(connectionString);
 
-        // insert connection string and all data to file
-        IFileWriter writer = _fileProvider.GetFileWriter(Path.Combine(Global.SchemaFileDirectory, Global.SchemaFileName));
+		// build schema file name from user-provided schema name and write all data
+		string baseName = Global.SafeFileName(args[1]);
+		string schemaFileName = baseName.EndsWith(".schema.txt", StringComparison.OrdinalIgnoreCase)
+			? baseName
+			: baseName + ".schema.txt";
+		string schemaFilePath = Path.Combine(Global.SchemasDirectory, schemaFileName);
+
+		// overwrite if exists
+		if (File.Exists(schemaFilePath))
+		{
+			File.Delete(schemaFilePath);
+		}
+		IFileWriter writer = _fileProvider.GetFileWriter(schemaFilePath);
 
         await WriteConnectionStringAsync(writer, connectionString);
         await WriteTablesAsync(writer, tables);
         await WriteColumnsAsync(writer, columns);
         await WriteStoredProceduresAsync(writer, sps);
 
-        writer.Dispose();
+		writer.Dispose();
 
-        _display.ShowInfo("Dump database schema has been done.");
+		// set newly dumped schema as active
+		Global.SetActiveSchema(schemaFileName);
+
+		_display.ShowInfo($"Dump database schema has been done. Active schema: {schemaFileName}");
     }
 
     private async Task WriteConnectionStringAsync(IFileWriter writer, string connectionString)
@@ -76,7 +95,7 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 
         foreach (ColumnModel m in columns)
         {
-            string s = $"{m.TableSchema},{m.TableName},{m.ColumnName},{m.OrdinalPosition},{m.ColumnDefault},{m.IsNullable},{m.DataType},{m.CharacterMaximumLength}";
+			string s = $"{m.TableSchema},{m.TableName},{m.ColumnName},{m.OrdinalPosition},{m.ColumnDefault},{m.IsNullable},{m.DataType},{m.CharacterMaximumLength},{m.ForeignKeyName},{m.ReferencedTableSchema},{m.ReferencedTableName},{m.ReferencedColumnName}";
             await writer.WriteLineAsync(s);
         }
     }

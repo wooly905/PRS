@@ -25,6 +25,9 @@ internal class FindStoredProcedureCommand(IDisplay display, IFileProvider filePr
             return;
         }
 
+		// show active schema in use
+		_display.ShowInfo($"Using schema: {Path.GetFileName(Global.SchemaFilePath)}");
+
         // read schema file line by line and search table and column 
         IFileReader reader = _fileProvider.GetFileReader(Global.SchemaFilePath);
         bool found = false;

@@ -26,6 +26,9 @@ internal class ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvide
             return;
         }
 
+		// show active schema in use
+		_display.ShowInfo($"Using schema: {Path.GetFileName(Global.SchemaFilePath)}");
+
         // read schema file line by line and search table and column 
         IFileReader reader = _fileProvider.GetFileReader(Global.SchemaFilePath);
         bool found = false;
@@ -72,9 +75,9 @@ internal class ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvide
                 break;
             }
 
-            string[] splits = line.Split(new char[] { ',' });
+			string[] splits = line.Split(new char[] { ',' });
 
-            if (string.Equals(splits[1], args[1], StringComparison.OrdinalIgnoreCase))
+			if (string.Equals(splits[1], args[1], StringComparison.OrdinalIgnoreCase))
             {
                 ColumnModel m = new()
                 {
@@ -85,7 +88,11 @@ internal class ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvide
                     ColumnDefault = splits[4],
                     IsNullable = splits[5],
                     DataType = splits[6],
-                    CharacterMaximumLength = splits[7]
+					CharacterMaximumLength = splits[7],
+					ForeignKeyName = splits.Length > 8 ? splits[8] : null,
+					ReferencedTableSchema = splits.Length > 9 ? splits[9] : null,
+					ReferencedTableName = splits.Length > 10 ? splits[10] : null,
+					ReferencedColumnName = splits.Length > 11 ? splits[11] : null
                 };
                 models.Add(m);
             }

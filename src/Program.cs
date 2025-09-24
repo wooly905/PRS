@@ -2,7 +2,6 @@
 using PRS.Database;
 using PRS.Display;
 using PRS.FileHandle;
-using Spectre.Console;
 
 namespace PRS;
 
@@ -45,6 +44,9 @@ static class Program
         Console.WriteLine("scs     Show MS SQL Server connection string.");
         Console.WriteLine("wcs     Write MS SQL Server connection string.");
         Console.WriteLine("dds     Dump db schema to local machine.");
+        Console.WriteLine("ls      List saved schemas and show active one.");
+        Console.WriteLine("use     Switch active schema. prs use [schema name]");
+        Console.WriteLine("rm      Remove a schema. prs rm [schema name]");
         Console.WriteLine("ft      Find table(s) (view).");
         Console.WriteLine("fc      Find column(s).");
         Console.WriteLine("ftc     Find column(s) in some table (view).");

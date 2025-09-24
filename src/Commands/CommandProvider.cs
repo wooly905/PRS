@@ -30,6 +30,24 @@ internal static class CommandProvider
             return true;
         }
 
+        if (string.Equals(input, "ls", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new ListSchemasCommand(display);
+            return true;
+        }
+
+        if (string.Equals(input, "use", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new UseSchemaCommand(display);
+            return true;
+        }
+
+        if (string.Equals(input, "rm", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new RemoveSchemaCommand(display);
+            return true;
+        }
+
         if (string.Equals(input, "ft", StringComparison.OrdinalIgnoreCase))
         {
             command = new FindTableCommand(display, fileProvider);

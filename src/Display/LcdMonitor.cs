@@ -13,7 +13,15 @@ internal class LcdMonitor : IDisplay
 
         foreach (string name in properties)
         {
-            t.AddColumn($"[bold yellow]{name}[/]");
+            string header = name switch
+            {
+                "CharacterMaximumLength" => "CharMaxLength",
+                "ReferencedTableSchema" => "RefTableSchema",
+                "ReferencedTableName" => "RefTableName",
+                "ReferencedColumnName" => "RefColumnName",
+                _ => name
+            };
+            t.AddColumn($"[bold yellow]{header}[/]");
         }
 
         foreach (ColumnModel model in models)
@@ -25,7 +33,11 @@ internal class LcdMonitor : IDisplay
                      model.ColumnDefault,
                      model.IsNullable,
                      model.DataType,
-                     model.CharacterMaximumLength);
+                     model.CharacterMaximumLength,
+                     model.ForeignKeyName ?? string.Empty,
+                     model.ReferencedTableSchema ?? string.Empty,
+                     model.ReferencedTableName ?? string.Empty,
+                     model.ReferencedColumnName ?? string.Empty);
         }
 
         t.Border = TableBorder.Rounded;
