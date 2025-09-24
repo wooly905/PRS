@@ -32,14 +32,25 @@ This is the first thing to do for this tool. Make sure your connection string is
 
 ![pic6](https://user-images.githubusercontent.com/18693681/129477454-07529fde-7f86-49bc-83fd-573251a509d4.JPG)
 
-### Dump schema to local machine (prs dds)
+### Dump schema to local machine (prs dds [schema name])
 
-This is the command to dump the database schema into your local user folder. 
-This command must be executed for any query command below.
+This command dumps the database schema into your local user folder.
+Schema name is required and determines the saved file name.
+
+Examples:
+
+> prs dds database1
+
+Notes:
+- Schemas are saved under your user profile: %APPDATA%\.prs\schemas
+- The saved file is <schema name>.schema.txt and becomes the active schema after dump.
+- All query commands use the active schema.
 
 ![pic7](https://user-images.githubusercontent.com/18693681/129477524-83185aa4-871d-47c6-beed-0cf169d168bc.JPG)
 
 ### Find table (prs ft) - table name can be *partial*
+
+When running any query command (ft, fc, ftc, fsp, sc), PRS prints the active schema in use, e.g., “Using schema: database1.schema.txt”.
 
 ![pic8](https://user-images.githubusercontent.com/18693681/129477565-0ada3957-a093-4a77-a8c4-bf055ac5677d.JPG)
 
@@ -51,7 +62,7 @@ This command must be executed for any query command below.
 
 ![pic10](https://user-images.githubusercontent.com/18693681/129477674-f2559954-3d2f-43d8-b5c7-269543f2ad0d.JPG)
 
-### Display all columns of a table
+### Display all columns of a table (shows FK info)
 
 ![image](https://user-images.githubusercontent.com/18693681/129477743-6f0b787b-94b2-4997-97e0-129d72c9c736.png)
 
@@ -59,3 +70,23 @@ This command must be executed for any query command below.
 
 > prs fsp [full or partial name of a storec procedure to find]
 
+
+## Manage multiple schemas
+
+PRS supports storing multiple schemas locally and switching between them.
+
+- List saved schemas and show the active one
+
+> prs ls
+
+- Switch active schema (by schema name, not file name)
+
+> prs use [schema name]
+
+- Remove a saved schema (by schema name)
+
+> prs rm [schema name]
+
+Notes:
+- Query commands always read from the active schema.
+- The active schema pointer is stored under %APPDATA%\.prs\active.txt.
