@@ -20,7 +20,23 @@ The following screenshots show you the tables and columns created by Hangfire.
 
 ### How to use this tool:
 
-![pic4](https://user-images.githubusercontent.com/18693681/129477875-8d3707f9-c85c-40e4-901e-b6ecdc0cf34a.JPG)
+```
+Usage: prs [options] [argument]
+
+Options:
+scs     Show MS SQL Server connection string.
+wcs     Write MS SQL Server connection string.
+dds     Dump db schema to local machine.
+ls      List saved schemas and show active one.
+use     Switch active schema. prs use [schema name]
+rm      Remove a schema. prs rm [schema name]
+ft      Find table(s) (view).
+fc      Find column(s).
+ftc     Find column(s) in some table (view).
+fsp     Find stored procedure.
+sc      Show all columns in a table.
+erd     Show ERD around a table. prs erd [table name]
+```
 
 ### Setup connection string (prs wcs)
 
@@ -52,24 +68,23 @@ Notes:
 
 When running any query command (ft, fc, ftc, fsp, sc), PRS prints the active schema in use, e.g., “Using schema: database1.schema.txt”.
 
-![pic8](https://user-images.githubusercontent.com/18693681/129477565-0ada3957-a093-4a77-a8c4-bf055ac5677d.JPG)
+<img width="482" height="185" alt="image" src="https://github.com/user-attachments/assets/fc952485-121c-4bc7-a539-a87894315d74" />
 
 ### Find column (prs fc) - find matched column in all tables
 
-![pic9](https://user-images.githubusercontent.com/18693681/129477624-0573396e-f94e-4217-b3b3-b5f007f3fe7b.JPG)
+<img width="2206" height="191" alt="image" src="https://github.com/user-attachments/assets/9c410a77-3444-4156-b745-6cc2cffd5ad0" />
 
 ### Find column in table(s) (prs ftc)
 
-![pic10](https://user-images.githubusercontent.com/18693681/129477674-f2559954-3d2f-43d8-b5c7-269543f2ad0d.JPG)
+<img width="1702" height="173" alt="image" src="https://github.com/user-attachments/assets/68c28620-32ef-4d6a-98f1-3d3cc39dd0f3" />
 
 ### Display all columns of a table (shows FK info)
 
-![image](https://user-images.githubusercontent.com/18693681/129477743-6f0b787b-94b2-4997-97e0-129d72c9c736.png)
+<img width="1944" height="322" alt="image" src="https://github.com/user-attachments/assets/5883af1c-943e-4e0d-99a8-d5eafd9a275c" />
 
 ### Find stored procedure
 
 > prs fsp [full or partial name of a storec procedure to find]
-
 
 ## Manage multiple schemas
 
@@ -90,3 +105,11 @@ PRS supports storing multiple schemas locally and switching between them.
 Notes:
 - Query commands always read from the active schema.
 - The active schema pointer is stored under %APPDATA%\.prs\active.txt.
+
+## Display ERD around a table
+
+> prs erd [table name]
+- Shows you the tables which have relations to the table that you enter.
+
+<img width="716" height="812" alt="image" src="https://github.com/user-attachments/assets/f7e1c94f-8b43-4dde-8a65-b3ac61d96bfb" />
+
