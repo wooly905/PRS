@@ -78,6 +78,12 @@ internal static class CommandProvider
             return true;
         }
 
+        if (string.Equals(input, "erd", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new ErdCommand(display, fileProvider);
+            return true;
+        }
+
         command = null;
         return false;
     }

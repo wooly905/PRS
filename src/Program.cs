@@ -52,6 +52,7 @@ static class Program
         Console.WriteLine("ftc     Find column(s) in some table (view).");
         Console.WriteLine("fsp     Find stored procedure.");
         Console.WriteLine("sc      Show all columns in a table.");
+        Console.WriteLine("erd     Show ERD around a table. prs erd [table name]");
 
         Console.WriteLine();
     }
