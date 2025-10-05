@@ -84,6 +84,36 @@ internal static class CommandProvider
             return true;
         }
 
+        if (string.Equals(input, "ai", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new AiCommand(display, fileProvider);
+            return true;
+        }
+
+        if (string.Equals(input, "lu", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new LlmUrlCommand(display, fileProvider);
+            return true;
+        }
+
+        if (string.Equals(input, "lk", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new LlmApiKeyCommand(display, fileProvider);
+            return true;
+        }
+
+        if (string.Equals(input, "slu", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new ShowLlmUrlCommand(display, fileProvider);
+            return true;
+        }
+
+        if (string.Equals(input, "slk", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new ShowLlmApiKeyCommand(display, fileProvider);
+            return true;
+        }
+
         command = null;
         return false;
     }

@@ -36,6 +36,11 @@ ftc     Find column(s) in some table (view).
 fsp     Find stored procedure.
 sc      Show all columns in a table.
 erd     Show ERD around a table. prs erd [table name]
+ai      Generate T-SQL from natural language: prs ai "question..."
+lu      Set LLM endpoint URL. prs lu "https://.../openai/v1"
+lk      Set LLM API key. prs lk your_api_key
+slu     Show current LLM endpoint URL.
+slk     Show current LLM API key.
 ```
 
 ### Setup connection string (prs wcs)
@@ -112,4 +117,37 @@ Notes:
 - Shows you the tables which have relations to the table that you enter.
 
 <img width="716" height="812" alt="image" src="https://github.com/user-attachments/assets/f7e1c94f-8b43-4dde-8a65-b3ac61d96bfb" />
+
+## AI-assisted SQL generation
+
+PRS can help you generate T-SQL from natural language, restricted to your active schema.
+
+### Configure LLM
+
+- Set endpoint URL
+
+> prs lu "https://your-endpoint/openai/v1"
+
+- Set API key
+
+> prs lk your_api_key
+
+Note:
+- They are shared across schemas and unaffected by switching the active schema.
+
+### Show current LLM settings
+
+> prs slu
+
+> prs slk
+
+### Generate SQL from a question
+
+> prs ai "show me the top 10 orders in 2024 with total amount"
+
+Behavior:
+- Extracts entities/keywords from your question
+- Searches your active schema context to constrain allowed tables/columns
+- Generates a single T-SQL statement using only the active schema
+- Performs a basic validation pass and attempts one correction if needed
 

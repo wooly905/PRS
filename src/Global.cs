@@ -14,6 +14,11 @@ internal static class Global
 
     public static string ConnectionStringFilePath => Path.Combine(SchemaFileDirectory, ConnectionStringFileName);
     public static string ConnectionStringSectionName => "[CS]";
+    public static string LlmUrlSectionName => "[LLM_URL]";
+    public static string LlmApiKeySectionName => "[LLM_API_KEY]";
+    public static string LlmConfigFilePath => Path.Combine(SchemaFileDirectory, "llm.config");
+    public static string LlmUrlConfigKey => "LLM_URL";
+    public static string LlmApiKeyConfigKey => "LLM_API_KEY";
     public static string TableSectionName => "[Table]";
     public static string ColumnSectionName => "[Column]";
     public static string StoredProcedureSectionName => "[StoredProcedure]";

@@ -53,6 +53,11 @@ static class Program
         Console.WriteLine("fsp     Find stored procedure.");
         Console.WriteLine("sc      Show all columns in a table.");
         Console.WriteLine("erd     Show ERD around a table. prs erd [table name]");
+        Console.WriteLine("ai      Generate T-SQL from natural language: prs ai \"question...\"");
+        Console.WriteLine("lu      Set LLM endpoint URL. prs lu \"https://.../openai/v1\"");
+        Console.WriteLine("lk      Set LLM API key. prs lk your_api_key");
+        Console.WriteLine("slu     Show current LLM endpoint URL.");
+        Console.WriteLine("slk     Show current LLM API key.");
 
         Console.WriteLine();
     }
