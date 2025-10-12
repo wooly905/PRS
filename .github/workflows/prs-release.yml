@@ -42,15 +42,21 @@ jobs:
         fail-on-error: true
 
     - name: Pack NuGet package
-      run: dotnet pack ${{ env.Project_Path }} -c Release --no-build --output ./nupkg
+      run: dotnet pack ${{ env.Project_Path }} -c Release --output ./nupkg-output
 
     - name: Display package info
       shell: pwsh
       run: |
-        $package = Get-ChildItem ./nupkg/*.nupkg | Select-Object -First 1
-        Write-Host "Package created: $($package.Name)"
-        Write-Host "Package size: $($package.Length / 1MB) MB"
-        Write-Host "Package path: $($package.FullName)"
+        if (Test-Path ./nupkg-output/*.nupkg) {
+          $package = Get-ChildItem ./nupkg-output/*.nupkg | Select-Object -First 1
+          Write-Host "Package created: $($package.Name)"
+          Write-Host "Package size: $($package.Length / 1MB) MB"
+          Write-Host "Package path: $($package.FullName)"
+        } else {
+          Write-Host "No package found in ./nupkg-output/"
+          Get-ChildItem ./nupkg-output -ErrorAction SilentlyContinue
+          exit 1
+        }
 
     - name: Push to NuGet.org
-      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      run: dotnet nuget push ./nupkg-output/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
