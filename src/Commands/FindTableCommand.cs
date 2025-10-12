@@ -29,69 +29,11 @@ internal class FindTableCommand(IDisplay display, IFileProvider fileProvider) : 
 		// show active schema in use
 		_display.ShowInfo($"Using schema: {Path.GetFileName(Global.SchemaFilePath)}");
 
-        // read schema file line by line and search table and column 
-        IFileReader reader = _fileProvider.GetFileReader(Global.SchemaFilePath);
-        bool found = false;
+        // Use new XML reader API with partial string search
+        using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
+        IEnumerable<TableModel> models = await reader.FindTablesAsync(args[1]);
 
-        while (true)
-        {
-            string line = await reader.ReadLineAsync();
-
-            if (line == null)
-            {
-                // end of file
-                break;
-            }
-
-            if (string.Equals(line, Global.TableSectionName))
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            _display.ShowInfo("Nothing found");
-            return;
-        }
-
-        // find targets 
-        List<TableModel> models = new();
-
-        while (true)
-        {
-            string line = await reader.ReadLineAsync();
-
-            if (line == null)
-            {
-                // end of file
-                break;
-            }
-
-            if (line.StartsWith("["))
-            {
-                // reach other section
-                break;
-            }
-
-            string[] splits = line.Split(new char[] { ',' });
-
-            if (splits[1]?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                TableModel m = new()
-                {
-                    TableSchema = splits[0],
-                    TableName = splits[1],
-                    TableType = splits[2]
-                };
-                models.Add(m);
-            }
-        }
-
-        reader.Dispose();
-
-        if (models.Count > 0)
+        if (models.Any())
         {
             CommandHelper.PrintTables(models, _display);
         }
