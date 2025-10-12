@@ -71,6 +71,9 @@ jobs:
         git config user.name "prs"
         git config user.email "prs@example.com"
         
+        # Delete remote branch if it exists
+        git push origin --delete $env:branch_name 2>&1 | Out-Null
+        
         git checkout -b $env:branch_name
         git add .
         git commit -m "Update revision number to $env:new_package_version"
