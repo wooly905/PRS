@@ -28,59 +28,14 @@ internal class FindStoredProcedureCommand(IDisplay display, IFileProvider filePr
 		// show active schema in use
 		_display.ShowInfo($"Using schema: {Path.GetFileName(Global.SchemaFilePath)}");
 
-        // read schema file line by line and search table and column 
-        IFileReader reader = _fileProvider.GetFileReader(Global.SchemaFilePath);
-        bool found = false;
-
-        while (true)
-        {
-            string line = await reader.ReadLineAsync();
-
-            if (line == null)
-            {
-                // end of file
-                break;
-            }
-
-            if (string.Equals(line, Global.StoredProcedureSectionName))
-            {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            _display.ShowInfo("Nothing found");
-            return;
-        }
-
-        // find targets 
-        List<string> models = new();
-
-        while (true)
-        {
-            string line = await reader.ReadLineAsync();
-
-            if (line == null)
-            {
-                // end of file
-                break;
-            }
-
-            if (line.StartsWith("["))
-            {
-                // reach other section
-                break;
-            }
-
-            if (line?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                models.Add(line);
-            }
-        }
-
-        reader.Dispose();
+        // Use new XML reader API with partial string search
+        using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
+        IEnumerable<string> allProcedures = await reader.ReadStoredProceduresAsync();
+        
+        // Filter by partial name match
+        var models = allProcedures.Where(sp =>
+            sp?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0
+        ).ToList();
 
         if (models.Count > 0)
         {

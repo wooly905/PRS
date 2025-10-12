@@ -47,9 +47,9 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 
 		// build schema file name from user-provided schema name and write all data
 		string baseName = Global.SafeFileName(args[1]);
-		string schemaFileName = baseName.EndsWith(".schema.txt", StringComparison.OrdinalIgnoreCase)
+		string schemaFileName = baseName.EndsWith(".schema.xml", StringComparison.OrdinalIgnoreCase)
 			? baseName
-			: baseName + ".schema.txt";
+			: baseName + ".schema.xml";
 		string schemaFilePath = Path.Combine(Global.SchemasDirectory, schemaFileName);
 
 		// overwrite if exists
@@ -57,12 +57,15 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 		{
 			File.Delete(schemaFilePath);
 		}
-		IFileWriter writer = _fileProvider.GetFileWriter(schemaFilePath);
 
-        await WriteConnectionStringAsync(writer, connectionString);
-        await WriteTablesAsync(writer, tables);
-        await WriteColumnsAsync(writer, columns);
-        await WriteStoredProceduresAsync(writer, sps);
+		// Use new high-level XML writer API
+		ISchemaWriter writer = _fileProvider.GetSchemaWriter(schemaFilePath);
+
+        await writer.WriteConnectionStringAsync(connectionString);
+        await writer.WriteTablesAsync(tables);
+        await writer.WriteColumnsAsync(columns);
+        await writer.WriteStoredProceduresAsync(sps);
+		await writer.SaveAsync();
 
 		writer.Dispose();
 
@@ -70,43 +73,5 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 		Global.SetActiveSchema(schemaFileName);
 
 		_display.ShowInfo($"Dump database schema has been done. Active schema: {schemaFileName}");
-    }
-
-    private async Task WriteConnectionStringAsync(IFileWriter writer, string connectionString)
-    {
-        await writer.WriteLineAsync(Global.ConnectionStringSectionName);
-        await writer.WriteLineAsync(connectionString);
-    }
-
-    private async Task WriteTablesAsync(IFileWriter writer, IEnumerable<TableModel> tables)
-    {
-        await writer.WriteLineAsync(Global.TableSectionName);
-
-        foreach (TableModel m in tables)
-        {
-            string s = $"{m.TableSchema},{m.TableName},{m.TableType}";
-            await writer.WriteLineAsync(s);
-        }
-    }
-
-    private async Task WriteColumnsAsync(IFileWriter writer, IEnumerable<ColumnModel> columns)
-    {
-        await writer.WriteLineAsync(Global.ColumnSectionName);
-
-        foreach (ColumnModel m in columns)
-        {
-			string s = $"{m.TableSchema},{m.TableName},{m.ColumnName},{m.OrdinalPosition},{m.ColumnDefault},{m.IsNullable},{m.DataType},{m.CharacterMaximumLength},{m.ForeignKeyName},{m.ReferencedTableSchema},{m.ReferencedTableName},{m.ReferencedColumnName}";
-            await writer.WriteLineAsync(s);
-        }
-    }
-
-    private async Task WriteStoredProceduresAsync(IFileWriter writer, IEnumerable<string> sps)
-    {
-        await writer.WriteLineAsync(Global.StoredProcedureSectionName);
-
-        foreach (string m in sps)
-        {
-            await writer.WriteLineAsync(m);
-        }
     }
 }
