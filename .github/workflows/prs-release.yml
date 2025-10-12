@@ -42,21 +42,74 @@ jobs:
         fail-on-error: true
 
     - name: Pack NuGet package
-      run: dotnet pack ${{ env.Project_Path }} -c Release --output ./nupkg-output
+      shell: pwsh
+      run: |
+        $workspaceDir = "${{ github.workspace }}"
+        $outputDir = Join-Path $workspaceDir "nupkg-output"
+        Write-Host "Workspace directory: $workspaceDir"
+        Write-Host "Output directory: $outputDir"
+        Write-Host "Project path: ${{ env.Project_Path }}"
+
+        # Ensure output directory exists
+        New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+
+        # Pack with explicit output path (no rebuild; already built)
+        dotnet pack "${{ env.Project_Path }}" -c Release --no-build -p:PackageOutputPath="$outputDir"
+
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "ERROR: Pack failed with exit code $LASTEXITCODE"
+          exit $LASTEXITCODE
+        }
+        Write-Host "Pack completed successfully"
 
     - name: Display package info
       shell: pwsh
       run: |
-        if (Test-Path ./nupkg-output/*.nupkg) {
-          $package = Get-ChildItem ./nupkg-output/*.nupkg | Select-Object -First 1
-          Write-Host "Package created: $($package.Name)"
-          Write-Host "Package size: $($package.Length / 1MB) MB"
-          Write-Host "Package path: $($package.FullName)"
+        $workspaceDir = "${{ github.workspace }}"
+        $outputDir = Join-Path $workspaceDir "nupkg-output"
+        Write-Host "Looking for packages in: $outputDir"
+
+        if (Test-Path $outputDir) {
+          $packages = Get-ChildItem -Path $outputDir -Filter *.nupkg -ErrorAction SilentlyContinue
+          if ($packages) {
+            Write-Host "Found $($packages.Count) package(s):"
+            foreach ($pkg in $packages) {
+              Write-Host "  - $($pkg.Name) ($([math]::Round($pkg.Length / 1MB, 2)) MB)"
+            }
+          } else {
+            Write-Host "ERROR: No .nupkg files found in $outputDir"
+            Write-Host "Directory contents:"
+            Get-ChildItem $outputDir | ForEach-Object { Write-Host "  - $($_.Name)" }
+            exit 1
+          }
         } else {
-          Write-Host "No package found in ./nupkg-output/"
-          Get-ChildItem ./nupkg-output -ErrorAction SilentlyContinue
+          Write-Host "ERROR: Output directory does not exist: $outputDir"
           exit 1
         }
 
     - name: Push to NuGet.org
-      run: dotnet nuget push ./nupkg-output/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      shell: pwsh
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        $workspaceDir = "${{ github.workspace }}"
+        $outputDir = Join-Path $workspaceDir "nupkg-output"
+        $packages = Get-ChildItem -Path $outputDir -Filter *.nupkg -ErrorAction SilentlyContinue
+
+        if (-not $packages -or $packages.Count -eq 0) {
+          Write-Host "ERROR: No packages found to push in $outputDir"
+          exit 1
+        }
+
+        Write-Host "Found $($packages.Count) package(s) to push"
+
+        foreach ($package in $packages) {
+          Write-Host "Pushing package: $($package.Name)"
+          dotnet nuget push "$($package.FullName)" --api-key "$env:NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+          if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 1) {
+            # Exit code 1 might be from --skip-duplicate, which is OK
+            Write-Host "ERROR: Failed to push $($package.Name) with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          Write-Host "Successfully pushed $($package.Name)"
+        }
