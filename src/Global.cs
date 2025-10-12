@@ -2,7 +2,7 @@
 
 internal static class Global
 {
-    public static string SchemaFileName => "schema.txt";
+    public static string SchemaFileName => "schema.xml";
     public static string ConnectionStringFileName => "prs.txt";
     public static string SchemaFileDirectory => Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), ".prs");
     public static string SchemasDirectory => Path.Combine(SchemaFileDirectory, "schemas");
@@ -79,7 +79,7 @@ internal static class Global
         string server = GetFirst(kv, ["Server", "Data Source", "Addr", "Address", "Network Address"]) ?? "server";
         string database = GetFirst(kv, ["Initial Catalog", "Database"]) ?? "database";
 
-        string safe = $"{SafeFileName(server)}_{SafeFileName(database)}.schema.txt";
+        string safe = $"{SafeFileName(server)}_{SafeFileName(database)}.schema.xml";
         return safe;
     }
 

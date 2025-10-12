@@ -18,9 +18,9 @@ internal class RemoveSchemaCommand(IDisplay display) : ICommand
 		}
 
 		string name = Global.SafeFileName(args[1]);
-		string target = name.EndsWith(".schema.txt", StringComparison.OrdinalIgnoreCase)
+		string target = name.EndsWith(".schema.xml", StringComparison.OrdinalIgnoreCase)
 			? name
-			: name + ".schema.txt";
+			: name + ".schema.xml";
 		string path = Path.Combine(Global.SchemasDirectory, target);
 
 		if (!File.Exists(path))

@@ -118,70 +118,10 @@ internal class ErdCommand(IDisplay display, IFileProvider fileProvider) : IComma
 
     private async Task<List<ColumnModel>> ReadAllColumnsAsync()
     {
-        IFileReader reader = _fileProvider.GetFileReader(Global.SchemaFilePath);
-        List<ColumnModel> columns = new();
-        bool inColumnSection = false;
-
-        try
-        {
-            while (true)
-            {
-                string line = await reader.ReadLineAsync();
-                if (line == null)
-                {
-                    break;
-                }
-
-                if (!inColumnSection)
-                {
-                    if (string.Equals(line, Global.ColumnSectionName))
-                    {
-                        inColumnSection = true;
-                    }
-                    continue;
-                }
-
-                if (line.StartsWith("["))
-                {
-                    // next section reached
-                    break;
-                }
-
-                string[] splits = line.Split(new char[] { ',' });
-                if (splits.Length < 3)
-                {
-                    continue;
-                }
-
-                ColumnModel m = new()
-                {
-                    TableSchema = SafeGet(splits, 0),
-                    TableName = SafeGet(splits, 1),
-                    ColumnName = SafeGet(splits, 2),
-                    OrdinalPosition = SafeGet(splits, 3),
-                    ColumnDefault = SafeGet(splits, 4),
-                    IsNullable = SafeGet(splits, 5),
-                    DataType = SafeGet(splits, 6),
-                    CharacterMaximumLength = SafeGet(splits, 7),
-                    ForeignKeyName = SafeGet(splits, 8),
-                    ReferencedTableSchema = SafeGet(splits, 9),
-                    ReferencedTableName = SafeGet(splits, 10),
-                    ReferencedColumnName = SafeGet(splits, 11)
-                };
-                columns.Add(m);
-            }
-        }
-        finally
-        {
-            reader.Dispose();
-        }
-
-        return columns;
-    }
-
-    private static string SafeGet(string[] arr, int index)
-    {
-        return index >= 0 && index < arr.Length ? arr[index] : null;
+        // Use new XML reader API
+        using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
+        IEnumerable<ColumnModel> columns = await reader.ReadAllColumnsAsync();
+        return columns.ToList();
     }
 
     private static string BuildAsciiBoxes(string targetTable, List<ColumnModel> allColumns)

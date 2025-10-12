@@ -29,6 +29,19 @@ jobs:
         dotnet restore
         dotnet build -c Release --no-restore
 
+    - name: Run unit tests
+      run: |
+        dotnet test tests/PRS.Tests.csproj --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
+    
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Unit Test Results
+        path: '**/test-results.trx'
+        reporter: dotnet-trx
+        fail-on-error: true
+
     - name: Increase revision number
       id: update_version
       shell: pwsh

@@ -3,12 +3,13 @@ on:
   workflow_dispatch
 
 jobs:
-  build:
-    runs-on: windows-latest  # For a list of available runner types, refer to
-                             # https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idruns-on
+  build-test-publish:
+    runs-on: windows-latest
 
     env:
       Solution_Name: PRS.sln
+      Project_Path: src/PRS.csproj
+      Tests_Path: tests/PRS.Tests.csproj
 
     steps:
     - name: Checkout
@@ -22,13 +23,34 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Build
-      run: dotnet build -c Release
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.Solution_Name }}
 
-    - name: Generate release files
-      run: dotnet publish -r win-x64 -c Release --sc true -o ./publish ./src/PRS.csproj
+    - name: Build solution
+      run: dotnet build ${{ env.Solution_Name }} -c Release --no-restore
 
-    - name: Setup .NET global tool
-      id: setup-global-tool
+    - name: Run unit tests
+      run: dotnet test ${{ env.Tests_Path }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Unit Test Results
+        path: '**/test-results.trx'
+        reporter: dotnet-trx
+        fail-on-error: true
+
+    - name: Pack NuGet package
+      run: dotnet pack ${{ env.Project_Path }} -c Release --no-build --output ./nupkg
+
+    - name: Display package info
+      shell: pwsh
       run: |
-        dotnet tool update --global PRS
+        $package = Get-ChildItem ./nupkg/*.nupkg | Select-Object -First 1
+        Write-Host "Package created: $($package.Name)"
+        Write-Host "Package size: $($package.Length / 1MB) MB"
+        Write-Host "Package path: $($package.FullName)"
+
+    - name: Push to NuGet.org
+      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

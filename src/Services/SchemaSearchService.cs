@@ -43,62 +43,39 @@ internal class SchemaSearchService
             // If parsing fails, continue with empty hints
         }
 
-        // Read schema file and collect only rows that match hints (active schema only by file)
-        var reader = _fileProvider.GetFileReader(schemaFilePath);
-        bool inTable = false;
-        bool inColumn = false;
+        // Use new XML reader API
+        using var reader = _fileProvider.GetSchemaReader(schemaFilePath);
+        var allTables = await reader.ReadTablesAsync();
+        var allColumns = await reader.ReadAllColumnsAsync();
+
         StringBuilder sb = new();
 
-        while (true)
+        // Process tables
+        foreach (var table in allTables)
         {
-            string line = await reader.ReadLineAsync();
-            if (line == null) break;
-
-            if (string.Equals(line, Global.TableSectionName))
+            if (tableHints.Count == 0 || 
+                tableHints.Contains(Normalize(table.TableName)) || 
+                tableHints.Any(h => table.TableName.Contains(h, StringComparison.OrdinalIgnoreCase)))
             {
-                inTable = true; inColumn = false; continue;
-            }
-            if (string.Equals(line, Global.ColumnSectionName))
-            {
-                inTable = false; inColumn = true; continue;
-            }
-            if (line.StartsWith("["))
-            {
-                inTable = false; inColumn = false; continue;
-            }
-
-            if (inTable)
-            {
-                // format: schema,table,type
-                string[] parts = line.Split(',');
-                if (parts.Length >= 2)
-                {
-                    string table = parts[1];
-                    if (tableHints.Count == 0 || tableHints.Contains(Normalize(table)) || tableHints.Any(h => table.Contains(h, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        sb.AppendLine($"TABLE|{parts[0]}|{parts[1]}|{parts[2]}");
-                    }
-                }
-            }
-            else if (inColumn)
-            {
-                // format: schema,table,column,ordinal,default,isnull,type,maxlen,fk,refSchema,refTable,refColumn
-                string[] parts = line.Split(',');
-                if (parts.Length >= 7)
-                {
-                    string table = parts[1];
-                    string column = parts[2];
-                    bool tableOk = tableHints.Count == 0 || tableHints.Contains(Normalize(table)) || tableHints.Any(h => table.Contains(h, StringComparison.OrdinalIgnoreCase));
-                    bool colOk = columnHints.Count == 0 || columnHints.Contains(Normalize(column)) || columnHints.Any(h => column.Contains(h, StringComparison.OrdinalIgnoreCase));
-                    if (tableOk || colOk)
-                    {
-                        sb.AppendLine($"COLUMN|{parts[0]}|{parts[1]}|{parts[2]}|{parts[6]}");
-                    }
-                }
+                sb.AppendLine($"TABLE|{table.TableSchema}|{table.TableName}|{table.TableType}");
             }
         }
 
-        reader.Dispose();
+        // Process columns
+        foreach (var column in allColumns)
+        {
+            bool tableOk = tableHints.Count == 0 || 
+                           tableHints.Contains(Normalize(column.TableName)) || 
+                           tableHints.Any(h => column.TableName.Contains(h, StringComparison.OrdinalIgnoreCase));
+            bool colOk = columnHints.Count == 0 || 
+                         columnHints.Contains(Normalize(column.ColumnName)) || 
+                         columnHints.Any(h => column.ColumnName.Contains(h, StringComparison.OrdinalIgnoreCase));
+            
+            if (tableOk || colOk)
+            {
+                sb.AppendLine($"COLUMN|{column.TableSchema}|{column.TableName}|{column.ColumnName}|{column.DataType}");
+            }
+        }
 
         return sb.ToString();
     }
