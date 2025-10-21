@@ -64,14 +64,28 @@ Examples:
 
 Notes:
 - Schemas are saved under your user profile: %APPDATA%\.prs\schemas
-- The saved file is <schema name>.schema.txt and becomes the active schema after dump.
+- The saved file is <schema name>.schema.md (Markdown format) and becomes the active schema after dump.
 - All query commands use the active schema.
+
+### Schema Format
+
+PRS now uses Markdown format for schema files, which provides:
+- Better readability and human-friendly format
+- Easier version control with Git
+- Smaller file sizes compared to XML
+- Direct editing capability with any text editor
+
+The Markdown format includes:
+- Connection string in code blocks
+- Tables organized by schema.table
+- Column details with data types, nullability, and foreign key relationships
+- Stored procedures list
 
 ![pic7](https://user-images.githubusercontent.com/18693681/129477524-83185aa4-871d-47c6-beed-0cf169d168bc.JPG)
 
 ### Find table (prs ft) - table name can be *partial*
 
-When running any query command (ft, fc, ftc, fsp, sc), PRS prints the active schema in use, e.g., “Using schema: database1.schema.txt”.
+When running any query command (ft, fc, ftc, fsp, sc), PRS prints the active schema in use, e.g., "Using schema: database1.schema.md".
 
 <img width="482" height="185" alt="image" src="https://github.com/user-attachments/assets/fc952485-121c-4bc7-a539-a87894315d74" />
 

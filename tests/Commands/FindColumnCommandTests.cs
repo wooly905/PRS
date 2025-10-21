@@ -20,8 +20,8 @@ public class FindColumnCommandTests : IDisposable
         Environment.SetEnvironmentVariable("APPDATA", TestFileHelper.GetTempPath());
         
         // Create test schema file in the location Global expects
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/schema.xml");
-        _testSchemaPath = Path.Combine(TestFileHelper.GetTempPath(), ".prs", "schemas", "schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/schema.md");
+        _testSchemaPath = Path.Combine(TestFileHelper.GetTempPath(), ".prs", "schemas", "schema.md");
     }
 
     [Fact]

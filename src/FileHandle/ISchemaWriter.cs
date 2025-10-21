@@ -3,7 +3,7 @@ using PRS.Database;
 namespace PRS.FileHandle;
 
 /// <summary>
-/// High-level interface for writing database schema to storage (XML format).
+/// High-level interface for writing database schema to storage (Markdown format).
 /// </summary>
 public interface ISchemaWriter : IDisposable
 {
@@ -28,7 +28,7 @@ public interface ISchemaWriter : IDisposable
     Task WriteStoredProceduresAsync(IEnumerable<string> procedureNames);
 
     /// <summary>
-    /// Saves the XML document to disk.
+    /// Saves the Markdown document to disk.
     /// </summary>
     Task SaveAsync();
 }

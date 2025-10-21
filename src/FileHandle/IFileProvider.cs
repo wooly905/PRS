@@ -6,7 +6,7 @@ internal interface IFileProvider
     public IFileReader GetFileReader(string file);
     public IFileWriter GetFileWriter(string file);
 
-    // New high-level interfaces for schema reading/writing (XML format)
+    // New high-level interfaces for schema reading/writing (Markdown format)
     public ISchemaReader GetSchemaReader(string file);
     public ISchemaWriter GetSchemaWriter(string file);
 }

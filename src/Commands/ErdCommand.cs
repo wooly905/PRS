@@ -118,7 +118,7 @@ internal class ErdCommand(IDisplay display, IFileProvider fileProvider) : IComma
 
     private async Task<List<ColumnModel>> ReadAllColumnsAsync()
     {
-        // Use new XML reader API
+        // Use new Markdown reader API
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
         IEnumerable<ColumnModel> columns = await reader.ReadAllColumnsAsync();
         return columns.ToList();

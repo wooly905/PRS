@@ -28,7 +28,7 @@ internal class FindStoredProcedureCommand(IDisplay display, IFileProvider filePr
 		// show active schema in use
 		_display.ShowInfo($"Using schema: {Path.GetFileName(Global.SchemaFilePath)}");
 
-        // Use new XML reader API with partial string search
+        // Use new Markdown reader API with partial string search
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
         IEnumerable<string> allProcedures = await reader.ReadStoredProceduresAsync();
         

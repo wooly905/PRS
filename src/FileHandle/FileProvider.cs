@@ -13,14 +13,14 @@ internal class FileProvider : IFileProvider
         return new SchemaFileWriter(file);
     }
 
-    // New high-level interfaces for schema reading/writing (XML format)
+    // New high-level interfaces for schema reading/writing (Markdown format)
     public ISchemaReader GetSchemaReader(string file)
     {
-        return new XmlSchemaReader(file);
+        return new MarkdownSchemaReader(file);
     }
 
     public ISchemaWriter GetSchemaWriter(string file)
     {
-        return new XmlSchemaWriter(file);
+        return new MarkdownSchemaWriter(file);
     }
 }

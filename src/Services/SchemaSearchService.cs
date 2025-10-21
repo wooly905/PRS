@@ -43,7 +43,7 @@ internal class SchemaSearchService
             // If parsing fails, continue with empty hints
         }
 
-        // Use new XML reader API
+        // Use new Markdown reader API
         using var reader = _fileProvider.GetSchemaReader(schemaFilePath);
         var allTables = await reader.ReadTablesAsync();
         var allColumns = await reader.ReadAllColumnsAsync();

@@ -47,9 +47,9 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 
 		// build schema file name from user-provided schema name and write all data
 		string baseName = Global.SafeFileName(args[1]);
-		string schemaFileName = baseName.EndsWith(".schema.xml", StringComparison.OrdinalIgnoreCase)
+		string schemaFileName = baseName.EndsWith(".schema.md", StringComparison.OrdinalIgnoreCase)
 			? baseName
-			: baseName + ".schema.xml";
+			: baseName + ".schema.md";
 		string schemaFilePath = Path.Combine(Global.SchemasDirectory, schemaFileName);
 
 		// overwrite if exists
@@ -58,7 +58,7 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 			File.Delete(schemaFilePath);
 		}
 
-		// Use new high-level XML writer API
+		// Use new high-level Markdown writer API
 		ISchemaWriter writer = _fileProvider.GetSchemaWriter(schemaFilePath);
 
         await writer.WriteConnectionStringAsync(connectionString);

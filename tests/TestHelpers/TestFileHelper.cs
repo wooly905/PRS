@@ -76,7 +76,7 @@ public static class TestFileHelper
 
     public static string CreateTestSchemaFile(string fileName)
     {
-        var testSchemaPath = GetTestDataPath("test.schema.xml");
+        var testSchemaPath = GetTestDataPath(fileName);
         var tempPath = GetTempFilePath(fileName);
         File.Copy(testSchemaPath, tempPath, true);
         return tempPath;

@@ -18,9 +18,9 @@ internal class UseSchemaCommand(IDisplay display) : ICommand
 		}
 
 		string name = Global.SafeFileName(args[1]);
-		string target = name.EndsWith(".schema.xml", StringComparison.OrdinalIgnoreCase)
+		string target = name.EndsWith(".schema.md", StringComparison.OrdinalIgnoreCase)
 			? name
-			: name + ".schema.xml";
+			: name + ".schema.md";
 		string path = Path.Combine(Global.SchemasDirectory, target);
 
 		if (!File.Exists(path))

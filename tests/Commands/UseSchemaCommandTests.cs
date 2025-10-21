@@ -26,7 +26,7 @@ public class UseSchemaCommandTests : IDisposable
     public async Task RunAsync_WithValidSchemaName_SwitchesActiveSchema()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb.schema.md");
 
         var command = new UseSchemaCommand(_display);
         var args = new[] { "use", "testdb" };
@@ -42,7 +42,7 @@ public class UseSchemaCommandTests : IDisposable
     public async Task RunAsync_WithBaseNameOnly_SwitchesActiveSchema()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/prod.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/prod.schema.md");
 
         var command = new UseSchemaCommand(_display);
         var args = new[] { "use", "prod" }; // Use simple name without extension
@@ -100,7 +100,7 @@ public class UseSchemaCommandTests : IDisposable
     public async Task RunAsync_CreatesActivePointerFile()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb.schema.md");
 
         var command = new UseSchemaCommand(_display);
         var args = new[] { "use", "testdb" };

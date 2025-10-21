@@ -1,7 +1,6 @@
 using PRS.Commands;
 using PRS.FileHandle;
 using PRS.Tests.TestHelpers;
-using System.Xml.Linq;
 using Xunit;
 
 namespace PRS.Tests.Commands;
@@ -31,13 +30,13 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_CreatesXmlSchemaFile()
+    public async Task RunAsync_CreatesMarkdownSchemaFile()
     {
         // Arrange
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.xml");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
         var args = new[] { "dds", schemaName };
 
         // Act
@@ -49,28 +48,24 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_CreatesValidXmlDocument()
+    public async Task RunAsync_CreatesValidMarkdownDocument()
     {
         // Arrange
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.xml");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
         var args = new[] { "dds", schemaName };
 
         // Act
         await command.RunAsync(args);
 
         // Assert
-        var xdoc = XDocument.Load(schemaFilePath);
-        Assert.NotNull(xdoc.Root);
-        Assert.Equal("Databases", xdoc.Root.Name.LocalName);
-
-        var database = xdoc.Root.Element("Database");
-        Assert.NotNull(database);
-        Assert.NotNull(database.Element("ConnectionString"));
-        Assert.NotNull(database.Element("Tables"));
-        Assert.NotNull(database.Element("StoredProcedures"));
+        var content = await File.ReadAllTextAsync(schemaFilePath);
+        Assert.Contains("# Database Schema", content);
+        Assert.Contains("## Connection String", content);
+        Assert.Contains("## Tables", content);
+        Assert.Contains("## Stored Procedures", content);
     }
 
     [Fact]
@@ -80,19 +75,17 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.xml");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
         var args = new[] { "dds", schemaName };
 
         // Act
         await command.RunAsync(args);
 
         // Assert
-        var xdoc = XDocument.Load(schemaFilePath);
-        var tables = xdoc.Descendants("Table").ToList();
-        Assert.Equal(3, tables.Count);
-        Assert.Contains(tables, t => t.Element("Name")?.Value == "Users");
-        Assert.Contains(tables, t => t.Element("Name")?.Value == "Orders");
-        Assert.Contains(tables, t => t.Element("Name")?.Value == "Products");
+        var content = await File.ReadAllTextAsync(schemaFilePath);
+        Assert.Contains("### dbo.Users", content);
+        Assert.Contains("### dbo.Orders", content);
+        Assert.Contains("### dbo.Products", content);
     }
 
     [Fact]
@@ -102,23 +95,17 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.xml");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
         var args = new[] { "dds", schemaName };
 
         // Act
         await command.RunAsync(args);
 
         // Assert
-        var xdoc = XDocument.Load(schemaFilePath);
-        var usersTable = xdoc.Descendants("Table")
-            .FirstOrDefault(t => t.Element("Name")?.Value == "Users");
-        Assert.NotNull(usersTable);
-
-        var columns = usersTable.Element("Columns")?.Elements("Column").ToList();
-        Assert.NotNull(columns);
-        Assert.NotEmpty(columns);
-        Assert.Contains(columns, c => c.Element("Name")?.Value == "UserId");
-        Assert.Contains(columns, c => c.Element("Name")?.Value == "UserName");
+        var content = await File.ReadAllTextAsync(schemaFilePath);
+        Assert.Contains("### dbo.Users", content);
+        Assert.Contains("UserId", content);
+        Assert.Contains("UserName", content);
     }
 
     [Fact]
@@ -128,24 +115,17 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.xml");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
         var args = new[] { "dds", schemaName };
 
         // Act
         await command.RunAsync(args);
 
         // Assert
-        var xdoc = XDocument.Load(schemaFilePath);
-        var ordersTable = xdoc.Descendants("Table")
-            .FirstOrDefault(t => t.Element("Name")?.Value == "Orders");
-        var userIdColumn = ordersTable?.Element("Columns")?.Elements("Column")
-            .FirstOrDefault(c => c.Element("Name")?.Value == "UserId");
-
-        Assert.NotNull(userIdColumn);
-        var fk = userIdColumn.Element("ForeignKey");
-        Assert.NotNull(fk);
-        Assert.Equal("FK_Orders_Users", fk.Element("Name")?.Value);
-        Assert.Equal("Users", fk.Element("ReferencedTableName")?.Value);
+        var content = await File.ReadAllTextAsync(schemaFilePath);
+        Assert.Contains("### dbo.Orders", content);
+        Assert.Contains("FK_Orders_Users", content);
+        Assert.Contains("→ dbo.Users", content);
     }
 
     [Fact]
@@ -155,17 +135,16 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.xml");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
         var args = new[] { "dds", schemaName };
 
         // Act
         await command.RunAsync(args);
 
         // Assert
-        var xdoc = XDocument.Load(schemaFilePath);
-        var procedures = xdoc.Descendants("Procedure").ToList();
-        Assert.Equal(3, procedures.Count);
-        Assert.Contains(procedures, p => p.Element("Name")?.Value == "sp_GetUsers");
+        var content = await File.ReadAllTextAsync(schemaFilePath);
+        Assert.Contains("## Stored Procedures", content);
+        Assert.Contains("- sp_GetUsers", content);
     }
 
     [Fact]
@@ -204,19 +183,19 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.xml");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
         var args = new[] { "dds", schemaName };
 
         // Create existing file
-        await File.WriteAllTextAsync(schemaFilePath, "<OldData></OldData>");
+        await File.WriteAllTextAsync(schemaFilePath, "# Old Data");
 
         // Act
         await command.RunAsync(args);
 
         // Assert
         var content = await File.ReadAllTextAsync(schemaFilePath);
-        Assert.DoesNotContain("OldData", content);
-        Assert.Contains("Databases", content);
+        Assert.DoesNotContain("# Old Data", content);
+        Assert.Contains("# Database Schema", content);
     }
 
     public void Dispose()

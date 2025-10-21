@@ -15,7 +15,7 @@ public class ErdCommandTests : IDisposable
     {
         _display = new TestDisplay();
         _fileProvider = new FileProvider();
-        _testSchemaPath = TestFileHelper.CreateTestSchemaFile("test.schema.xml");
+        _testSchemaPath = TestFileHelper.CreateTestSchemaFile("test.schema.md");
     }
 
     [Fact]

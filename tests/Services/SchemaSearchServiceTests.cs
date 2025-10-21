@@ -15,7 +15,7 @@ public class SchemaSearchServiceTests : IDisposable
     {
         _fileProvider = new FileProvider();
         _service = new SchemaSearchService(_fileProvider);
-        _testSchemaPath = TestFileHelper.CreateTestSchemaFile("test.schema.xml");
+        _testSchemaPath = TestFileHelper.CreateTestSchemaFile("test.schema.md");
     }
 
     [Fact]

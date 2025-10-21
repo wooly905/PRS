@@ -3,7 +3,7 @@ using PRS.Database;
 namespace PRS.FileHandle;
 
 /// <summary>
-/// High-level interface for reading database schema from storage (XML format).
+/// High-level interface for reading database schema from storage (Markdown format).
 /// </summary>
 public interface ISchemaReader : IDisposable
 {

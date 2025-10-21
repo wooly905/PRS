@@ -29,7 +29,7 @@ internal class ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvide
 		// show active schema in use
 		_display.ShowInfo($"Using schema: {Path.GetFileName(Global.SchemaFilePath)}");
 
-        // Use new XML reader API with exact table name match
+        // Use new Markdown reader API with exact table name match
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
         IEnumerable<ColumnModel> models = await reader.ReadColumnsForTableAsync(args[1]);
 

@@ -29,7 +29,7 @@ internal class FindTableColumnCommand(IDisplay display, IFileProvider fileProvid
 		// show active schema in use
 		_display.ShowInfo($"Using schema: {Path.GetFileName(Global.SchemaFilePath)}");
 
-        // Use new XML reader API with partial string search for both table and column
+        // Use new Markdown reader API with partial string search for both table and column
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
         IEnumerable<ColumnModel> allColumns = await reader.ReadAllColumnsAsync();
         

@@ -17,7 +17,7 @@ internal class ListSchemasCommand(IDisplay display) : ICommand
 		}
 
 		string active = Global.GetActiveSchemaName();
-		string[] files = Directory.GetFiles(Global.SchemasDirectory, "*.schema.xml", SearchOption.TopDirectoryOnly);
+		string[] files = Directory.GetFiles(Global.SchemasDirectory, "*.schema.md", SearchOption.TopDirectoryOnly);
 
 		if (files == null || files.Length == 0)
 		{
@@ -29,8 +29,8 @@ internal class ListSchemasCommand(IDisplay display) : ICommand
 		foreach (string f in files)
 		{
 			string name = Path.GetFileName(f);
-			string shortName = name.EndsWith(".schema.xml", StringComparison.OrdinalIgnoreCase)
-				? name.Substring(0, name.Length - ".schema.xml".Length)
+			string shortName = name.EndsWith(".schema.md", StringComparison.OrdinalIgnoreCase)
+				? name.Substring(0, name.Length - ".schema.md".Length)
 				: name;
 			if (!string.IsNullOrWhiteSpace(active) && string.Equals(name, active, StringComparison.OrdinalIgnoreCase))
 			{

@@ -40,9 +40,9 @@ public class ListSchemasCommandTests : IDisposable
     public async Task RunAsync_WithMultipleSchemas_ListsAllSchemas()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb1.schema.xml");
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb2.schema.xml");
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/prod.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb1.schema.md");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb2.schema.md");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/prod.schema.md");
 
         var command = new ListSchemasCommand(_display);
         var args = new[] { "ls" };
@@ -61,14 +61,14 @@ public class ListSchemasCommandTests : IDisposable
     public async Task RunAsync_MarksActiveSchema()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb1.schema.xml");
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb2.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb1.schema.md");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb2.schema.md");
 
         // Set active schema
         var activePointerDir = Path.Combine(TestFileHelper.GetTempPath(), ".prs");
         Directory.CreateDirectory(activePointerDir);
         var activePointerPath = Path.Combine(activePointerDir, "active.txt");
-        await File.WriteAllTextAsync(activePointerPath, "testdb1.schema.xml");
+        await File.WriteAllTextAsync(activePointerPath, "testdb1.schema.md");
 
         var command = new ListSchemasCommand(_display);
         var args = new[] { "ls" };
@@ -85,7 +85,7 @@ public class ListSchemasCommandTests : IDisposable
     public async Task RunAsync_ShowsSchemaWithoutExtension()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/mydatabase.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/mydatabase.schema.md");
 
         var command = new ListSchemasCommand(_display);
         var args = new[] { "ls" };
@@ -95,7 +95,7 @@ public class ListSchemasCommandTests : IDisposable
 
         // Assert
         Assert.True(_display.ContainsAnyMessage("mydatabase"));
-        Assert.False(_display.AllMessages.Any(m => m.Contains(".schema.xml")));
+        Assert.False(_display.AllMessages.Any(m => m.Contains(".schema.md")));
     }
 
     public void Dispose()

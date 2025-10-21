@@ -26,8 +26,8 @@ public class RemoveSchemaCommandTests : IDisposable
     public async Task RunAsync_WithValidSchemaName_RemovesSchema()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb.schema.xml");
-        var schemaPath = Path.Combine(_tempSchemasDir, "testdb.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb.schema.md");
+        var schemaPath = Path.Combine(_tempSchemasDir, "testdb.schema.md");
         Assert.True(File.Exists(schemaPath), "Schema file should exist before test");
 
         var command = new RemoveSchemaCommand(_display);
@@ -45,8 +45,8 @@ public class RemoveSchemaCommandTests : IDisposable
     public async Task RunAsync_WithFullFileName_RemovesSchema()
     {
         // Arrange
-        TestFileHelper.CopyTestFile("test.schema.xml", ".prs/schemas/testdb.schema.xml");
-        var schemaPath = Path.Combine(_tempSchemasDir, "testdb.schema.xml");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb.schema.md");
+        var schemaPath = Path.Combine(_tempSchemasDir, "testdb.schema.md");
         Assert.True(File.Exists(schemaPath), "Schema file should exist before test");
 
         var command = new RemoveSchemaCommand(_display);
