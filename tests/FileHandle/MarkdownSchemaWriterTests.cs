@@ -51,7 +51,7 @@ public class MarkdownSchemaWriterTests : IDisposable
         Assert.Contains("### dbo.Orders", content);
         Assert.Contains("UserId (int, NOT NULL, Position: 1)", content);
         Assert.Contains("UserName (nvarchar(100), NOT NULL, Position: 2)", content);
-        Assert.Contains("FK: FK_Orders_Users → dbo.Users.UserId", content);
+        Assert.Contains("**FK**: FK_Orders_Users → dbo.Users.UserId", content);
         Assert.Contains("## Stored Procedures", content);
         Assert.Contains("- sp_GetUserOrders", content);
         Assert.Contains("- sp_CreateOrder", content);

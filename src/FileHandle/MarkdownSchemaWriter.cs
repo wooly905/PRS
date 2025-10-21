@@ -156,7 +156,8 @@ internal class MarkdownSchemaWriter : ISchemaWriter
             !string.IsNullOrWhiteSpace(column.ReferencedTableName) &&
             !string.IsNullOrWhiteSpace(column.ReferencedColumnName))
         {
-            _content.Append($" - FK: {column.ForeignKeyName} → {column.ReferencedTableSchema}.{column.ReferencedTableName}.{column.ReferencedColumnName}");
+            _content.AppendLine();
+            _content.Append($"    - **FK**: {column.ForeignKeyName} → {column.ReferencedTableSchema}.{column.ReferencedTableName}.{column.ReferencedColumnName}");
         }
         
         _content.AppendLine();
