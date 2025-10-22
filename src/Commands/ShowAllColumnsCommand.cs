@@ -35,7 +35,9 @@ internal class ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvide
 
         if (models.Any())
         {
-            CommandHelper.PrintColumns(models, _display);
+            // Sort columns by name alphabetically before displaying
+            var sortedModels = models.OrderBy(m => m.ColumnName, StringComparer.OrdinalIgnoreCase);
+            CommandHelper.PrintColumns(sortedModels, _display);
         }
         else
         {

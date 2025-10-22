@@ -164,6 +164,114 @@ public class ShowAllColumnsCommandTests : IDisposable
         Assert.True(_display.ContainsInfo("Nothing found"));
     }
 
+    [Fact]
+    public async Task RunAsync_DisplaysColumnsInAlphabeticalOrder()
+    {
+        // Arrange
+        var command = new ShowAllColumnsCommand(_display, _fileProvider);
+        var args = new[] { "sc", "Users" };
+
+        // Act
+        await command.RunAsync(args);
+
+        // Assert
+        // Get all column messages and extract column names
+        var columnMessages = _display.InfoMessages
+            .Where(m => m.StartsWith("Column:"))
+            .ToList();
+
+        Assert.NotEmpty(columnMessages);
+
+        // Extract column names from messages
+        var columnNames = columnMessages
+            .Select(m => m.Split('.')[2].Split(' ')[0]) // Extract column name from "Column: dbo.Users.ColumnName (DataType)"
+            .ToList();
+
+        // Verify columns are in alphabetical order
+        var expectedOrder = columnNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+        Assert.Equal(expectedOrder, columnNames);
+    }
+
+    [Fact]
+    public async Task RunAsync_DisplaysColumnsInAlphabeticalOrder_WithMixedCase()
+    {
+        // Arrange - Create a test schema with mixed case column names
+        var testSchemaContent = @"# Database Schema
+
+## Connection String
+```
+Server=localhost;Database=TestDB;Integrated Security=true;
+```
+
+## Tables
+
+### dbo.TestTable
+- **Type**: BASE TABLE
+- **Columns**:
+  - ZColumn (int, NOT NULL, Position: 1)
+  - aColumn (nvarchar(100), NOT NULL, Position: 2)
+  - BColumn (nvarchar(255), NULL, Position: 3)
+  - cColumn (datetime, NOT NULL, Position: 4)
+";
+
+        var testSchemaPath = Path.Combine(TestFileHelper.GetTempPath(), ".prs", "schemas", "test_mixed_case.schema.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(testSchemaPath)!);
+        await File.WriteAllTextAsync(testSchemaPath, testSchemaContent);
+
+        // Set the active schema for this test
+        var originalActiveSchema = Global.GetActiveSchemaName();
+        Global.SetActiveSchema("test_mixed_case.schema.md");
+
+        try
+        {
+            var command = new ShowAllColumnsCommand(_display, _fileProvider);
+            var args = new[] { "sc", "TestTable" };
+
+            // Act
+            await command.RunAsync(args);
+
+            // Assert
+            var columnMessages = _display.InfoMessages
+                .Where(m => m.StartsWith("Column:"))
+                .ToList();
+
+            Assert.NotEmpty(columnMessages);
+
+            // Extract column names from messages
+            var columnNames = columnMessages
+                .Select(m => m.Split('.')[2].Split(' ')[0])
+                .ToList();
+
+            // Verify columns are in alphabetical order (case-insensitive)
+            var expectedOrder = columnNames.OrderBy(name => name, StringComparer.OrdinalIgnoreCase).ToList();
+            Assert.Equal(expectedOrder, columnNames);
+
+            // Verify specific order: aColumn, BColumn, cColumn, ZColumn
+            Assert.Equal("aColumn", columnNames[0]);
+            Assert.Equal("BColumn", columnNames[1]);
+            Assert.Equal("cColumn", columnNames[2]);
+            Assert.Equal("ZColumn", columnNames[3]);
+        }
+        finally
+        {
+            // Restore original active schema
+            if (!string.IsNullOrEmpty(originalActiveSchema))
+            {
+                Global.SetActiveSchema(originalActiveSchema);
+            }
+            else
+            {
+                // Clear the active schema if there wasn't one originally
+                Global.SetActiveSchema(string.Empty);
+            }
+            
+            if (File.Exists(testSchemaPath))
+            {
+                File.Delete(testSchemaPath);
+            }
+        }
+    }
+
     public void Dispose()
     {
         TestFileHelper.CleanupTempFiles();
