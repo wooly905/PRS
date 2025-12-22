@@ -45,6 +45,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="PRS.Tests" />
+        <InternalsVisibleTo Include="prs-mcp" />
     </ItemGroup>
 
 </Project>
