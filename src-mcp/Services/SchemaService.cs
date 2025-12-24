@@ -6,42 +6,44 @@ namespace PRS.McpServer.Services;
 internal class SchemaService
 {
     private readonly IFileProvider _fileProvider;
+    private readonly string _schemaFilePath;
 
-    public SchemaService(IFileProvider fileProvider)
+    public SchemaService(IFileProvider fileProvider, string? schemaFilePath = null)
     {
         _fileProvider = fileProvider;
+        _schemaFilePath = schemaFilePath ?? Global.SchemaFilePath;
     }
 
     public async Task<IEnumerable<TableModel>> FindTablesAsync(string keyword)
     {
-        if (!File.Exists(Global.SchemaFilePath))
+        if (!File.Exists(_schemaFilePath))
         {
             return Enumerable.Empty<TableModel>();
         }
 
-        using var reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
+        using var reader = _fileProvider.GetSchemaReader(_schemaFilePath);
         return await reader.FindTablesAsync(keyword);
     }
 
     public async Task<IEnumerable<ColumnModel>> FindColumnsAsync(string keyword)
     {
-        if (!File.Exists(Global.SchemaFilePath))
+        if (!File.Exists(_schemaFilePath))
         {
             return Enumerable.Empty<ColumnModel>();
         }
 
-        using var reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
+        using var reader = _fileProvider.GetSchemaReader(_schemaFilePath);
         return await reader.FindColumnsAsync(keyword);
     }
 
     public async Task<IEnumerable<string>> FindStoredProceduresAsync(string keyword)
     {
-        if (!File.Exists(Global.SchemaFilePath))
+        if (!File.Exists(_schemaFilePath))
         {
             return Enumerable.Empty<string>();
         }
 
-        using var reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
+        using var reader = _fileProvider.GetSchemaReader(_schemaFilePath);
         var allProcedures = await reader.ReadStoredProceduresAsync();
         
         if (string.IsNullOrWhiteSpace(keyword))
@@ -55,12 +57,12 @@ internal class SchemaService
 
     public async Task<IEnumerable<ColumnModel>> GetTableDetailsAsync(string tableName, string? schema = null)
     {
-        if (!File.Exists(Global.SchemaFilePath))
+        if (!File.Exists(_schemaFilePath))
         {
             return Enumerable.Empty<ColumnModel>();
         }
 
-        using var reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
+        using var reader = _fileProvider.GetSchemaReader(_schemaFilePath);
         
         // If schema is provided, try schema.table format
         if (!string.IsNullOrWhiteSpace(schema))

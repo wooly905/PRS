@@ -46,9 +46,23 @@ internal class FindStoredProcedureTool : IMcpTool
         string keyword = keywordObj.ToString() ?? string.Empty;
         var procedures = await _schemaService.FindStoredProceduresAsync(keyword);
 
+        var procedureList = procedures.ToList();
+
+        // Return both human-readable format and structured data for LLM
         return new
         {
-            storedProcedures = procedures.ToList()
+            content = new[]
+            {
+                new
+                {
+                    type = "text",
+                    text = OutputFormatter.FormatStoredProcedures(procedureList)
+                }
+            },
+            data = new
+            {
+                storedProcedures = procedureList
+            }
         };
     }
 }

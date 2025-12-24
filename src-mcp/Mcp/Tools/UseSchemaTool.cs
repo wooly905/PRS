@@ -46,11 +46,23 @@ internal class UseSchemaTool : IMcpTool
         string schemaName = schemaNameObj.ToString() ?? string.Empty;
         var result = await _schemaService.SwitchSchemaAsync(schemaName);
 
+        // Return both human-readable format and structured data for LLM
         return new
         {
-            success = result.Success,
-            message = result.Message,
-            activeSchema = result.ActiveSchema
+            content = new[]
+            {
+                new
+                {
+                    type = "text",
+                    text = OutputFormatter.FormatSchemaSwitch(result.Success, result.Message, result.ActiveSchema)
+                }
+            },
+            data = new
+            {
+                success = result.Success,
+                message = result.Message,
+                activeSchema = result.ActiveSchema
+            }
         };
     }
 }

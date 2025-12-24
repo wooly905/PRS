@@ -48,23 +48,37 @@ internal class FindColumnTool : IMcpTool
         string keyword = keywordObj.ToString() ?? string.Empty;
         var columns = await _schemaService.FindColumnsAsync(keyword);
 
+        var columnList = columns.Select(c => new
+        {
+            schema = c.TableSchema,
+            table = c.TableName,
+            column = c.ColumnName,
+            dataType = c.DataType,
+            isNullable = c.IsNullable,
+            hasForeignKey = !string.IsNullOrWhiteSpace(c.ReferencedTableName),
+            foreignKey = string.IsNullOrWhiteSpace(c.ReferencedTableName) ? null : new
+            {
+                referencedSchema = c.ReferencedTableSchema,
+                referencedTable = c.ReferencedTableName,
+                referencedColumn = c.ReferencedColumnName
+            }
+        }).ToList();
+
+        // Return both human-readable format and structured data for LLM
         return new
         {
-            columns = columns.Select(c => new
+            content = new[]
             {
-                schema = c.TableSchema,
-                table = c.TableName,
-                column = c.ColumnName,
-                dataType = c.DataType,
-                isNullable = c.IsNullable,
-                hasForeignKey = !string.IsNullOrWhiteSpace(c.ReferencedTableName),
-                foreignKey = string.IsNullOrWhiteSpace(c.ReferencedTableName) ? null : new
+                new
                 {
-                    referencedSchema = c.ReferencedTableSchema,
-                    referencedTable = c.ReferencedTableName,
-                    referencedColumn = c.ReferencedColumnName
+                    type = "text",
+                    text = OutputFormatter.FormatColumns(columns)
                 }
-            }).ToList()
+            },
+            data = new
+            {
+                columns = columnList
+            }
         };
     }
 }

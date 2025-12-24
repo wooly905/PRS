@@ -11,12 +11,14 @@ internal class McpServer
     private readonly SchemaService _schemaService;
     private readonly SchemaResource _schemaResource;
     private readonly Dictionary<string, IMcpTool> _tools;
+    private readonly TextWriter? _customOut;
 
-    public McpServer(SchemaService schemaService, SchemaResource schemaResource)
+    public McpServer(SchemaService schemaService, SchemaResource schemaResource, TextWriter? customOut = null)
     {
         _schemaService = schemaService;
         _schemaResource = schemaResource;
         _tools = new Dictionary<string, IMcpTool>();
+        _customOut = customOut;
     }
 
     public void RegisterTool(IMcpTool tool)
@@ -27,12 +29,13 @@ internal class McpServer
     public async Task RunAsync()
     {
         var stdin = Console.OpenStandardInput();
-        var stdout = Console.OpenStandardOutput();
-
-        // Use UTF8NoBOM to avoid BOM issues with JSON parsing
+        
+        // Use the custom output if provided (original stdout), otherwise use Console.OpenStandardOutput()
+        // We use UTF8NoBOM to avoid BOM issues with JSON parsing
         var utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+        
         using var reader = new StreamReader(stdin, utf8NoBom, leaveOpen: true);
-        using var writer = new StreamWriter(stdout, utf8NoBom, leaveOpen: true) { AutoFlush = true };
+        using var writer = _customOut ?? new StreamWriter(Console.OpenStandardOutput(), utf8NoBom, leaveOpen: true) { AutoFlush = true };
 
         string? line;
         while ((line = await reader.ReadLineAsync()) != null)

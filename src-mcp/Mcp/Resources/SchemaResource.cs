@@ -38,11 +38,18 @@ internal class SchemaResource
         // Read the schema file content
         string content = await File.ReadAllTextAsync(filePath);
 
+        // MCP protocol requires contents to be an array
         return new
         {
-            uri = uri,
-            mimeType = "text/markdown",
-            text = content
+            contents = new[]
+            {
+                new
+                {
+                    uri = uri,
+                    mimeType = "text/markdown",
+                    text = content
+                }
+            }
         };
     }
 

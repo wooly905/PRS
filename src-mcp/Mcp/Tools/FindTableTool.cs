@@ -48,14 +48,28 @@ internal class FindTableTool : IMcpTool
         string keyword = keywordObj.ToString() ?? string.Empty;
         var tables = await _schemaService.FindTablesAsync(keyword);
 
+        var tableList = tables.Select(t => new
+        {
+            schema = t.TableSchema,
+            name = t.TableName,
+            type = t.TableType
+        }).ToList();
+
+        // Return both human-readable format and structured data for LLM
         return new
         {
-            tables = tables.Select(t => new
+            content = new[]
             {
-                schema = t.TableSchema,
-                name = t.TableName,
-                type = t.TableType
-            }).ToList()
+                new
+                {
+                    type = "text",
+                    text = OutputFormatter.FormatTables(tables)
+                }
+            },
+            data = new
+            {
+                tables = tableList
+            }
         };
     }
 }

@@ -32,15 +32,29 @@ internal class ListSchemasTool : IMcpTool
     {
         var result = await _schemaService.ListSchemasAsync();
 
+        var schemaList = result.Schemas.Select(s => new
+        {
+            name = s.Name,
+            fileName = s.FileName,
+            isActive = s.IsActive
+        }).ToList();
+
+        // Return both human-readable format and structured data for LLM
         return new
         {
-            activeSchema = result.ActiveSchema,
-            schemas = result.Schemas.Select(s => new
+            content = new[]
             {
-                name = s.Name,
-                fileName = s.FileName,
-                isActive = s.IsActive
-            }).ToList()
+                new
+                {
+                    type = "text",
+                    text = OutputFormatter.FormatSchemas(result.ActiveSchema, result.Schemas)
+                }
+            },
+            data = new
+            {
+                activeSchema = result.ActiveSchema,
+                schemas = schemaList
+            }
         };
     }
 }

@@ -11,7 +11,7 @@ public class SchemaServiceTests
     {
         // Arrange
         IFileProvider fileProvider = new FileProvider();
-        var service = new SchemaService(fileProvider);
+        var service = new SchemaService(fileProvider, "non-existent.schema.md");
 
         // Act
         var result = await service.ListSchemasAsync();
@@ -26,7 +26,7 @@ public class SchemaServiceTests
     {
         // Arrange
         IFileProvider fileProvider = new FileProvider();
-        var service = new SchemaService(fileProvider);
+        var service = new SchemaService(fileProvider, "non-existent.schema.md");
 
         // Act
         var result = await service.FindTablesAsync("test");
@@ -41,7 +41,7 @@ public class SchemaServiceTests
     {
         // Arrange
         IFileProvider fileProvider = new FileProvider();
-        var service = new SchemaService(fileProvider);
+        var service = new SchemaService(fileProvider, "non-existent.schema.md");
 
         // Act
         var result = await service.FindColumnsAsync("test");
@@ -56,7 +56,7 @@ public class SchemaServiceTests
     {
         // Arrange
         IFileProvider fileProvider = new FileProvider();
-        var service = new SchemaService(fileProvider);
+        var service = new SchemaService(fileProvider, "non-existent.schema.md");
 
         // Act
         var result = await service.FindStoredProceduresAsync("test");
@@ -71,7 +71,7 @@ public class SchemaServiceTests
     {
         // Arrange
         IFileProvider fileProvider = new FileProvider();
-        var service = new SchemaService(fileProvider);
+        var service = new SchemaService(fileProvider, "non-existent.schema.md");
 
         // Act
         var result = await service.GetTableDetailsAsync("TestTable");
@@ -86,7 +86,7 @@ public class SchemaServiceTests
     {
         // Arrange
         IFileProvider fileProvider = new FileProvider();
-        var service = new SchemaService(fileProvider);
+        var service = new SchemaService(fileProvider, "non-existent.schema.md");
 
         // Act
         var result = await service.SwitchSchemaAsync("NonExistentSchema");
