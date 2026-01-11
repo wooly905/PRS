@@ -15,14 +15,14 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
-    - name: Install .NET 8.0
-      uses: actions/setup-dotnet@v3
+    - name: Install .NET 10.0
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
 
     - name: Restore and build the application
       run: |
@@ -33,14 +33,14 @@ jobs:
       run: |
         dotnet test tests/PRS.Tests.csproj --configuration Release --verbosity normal --logger "trx;LogFileName=test-results.trx"
     
-    - name: Publish test results
-      uses: dorny/test-reporter@v1
-      if: always()
-      with:
-        name: Unit Test Results
-        path: '**/test-results.trx'
-        reporter: dotnet-trx
-        fail-on-error: true
+    # - name: Publish test results
+    #   uses: dorny/test-reporter@v1
+    #   if: always()
+    #   with:
+    #     name: Unit Test Results
+    #     path: '**/test-results.trx'
+    #     reporter: dotnet-trx
+    #     fail-on-error: true
 
     - name: Increase revision number
       id: update_version
