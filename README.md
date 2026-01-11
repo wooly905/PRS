@@ -21,11 +21,10 @@ PRS is a powerful tool designed to bridge the gap between SQL Server databases a
 
 ### 2. Install as a Global Tool
 
-You can install PRS as a .NET global tool from the source:
+You can install PRS as a .NET global tool:
 
 ```bash
-dotnet pack src/PRS.csproj
-dotnet tool install --global --add-source ./nupkg wooly905.prs
+dotnet tool install wooly905.prs -g
 ```
 
 Or run it directly from the source:

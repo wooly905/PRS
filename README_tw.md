@@ -21,11 +21,10 @@ PRS 是一個強大的工具，旨在彌合 SQL Server 資料庫與開發人員�
 
 ### 2. 安裝為全域工具
 
-您可以從程式碼將 PRS 安裝為 .NET 全域工具：
+您可以直接將 PRS 安裝為 .NET 全域工具：
 
 ```bash
-dotnet pack src/PRS.csproj
-dotnet tool install --global --add-source ./nupkg wooly905.prs
+dotnet tool install wooly905.prs -g
 ```
 
 或者直接從程式碼執行：

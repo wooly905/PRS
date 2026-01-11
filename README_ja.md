@@ -21,11 +21,10 @@ PRS は、SQL Server データベースと開発者（または AI エージェ�
 
 ### 2. グローバルツールとしてインストール
 
-ソースから PRS を .NET グローバルツールとしてインストールできます：
+PRS を .NET グローバルツールとしてインストールできます：
 
 ```bash
-dotnet pack src/PRS.csproj
-dotnet tool install --global --add-source ./nupkg wooly905.prs
+dotnet tool install wooly905.prs -g
 ```
 
 または、ソースから直接実行します：
