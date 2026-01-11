@@ -32,14 +32,14 @@ jobs:
     - name: Run unit tests
       run: dotnet test ${{ env.Tests_Path }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
 
-    - name: Publish test results
-      uses: dorny/test-reporter@v1
-      if: always()
-      with:
-        name: Unit Test Results
-        path: '**/test-results.trx'
-        reporter: dotnet-trx
-        fail-on-error: true
+    # - name: Publish test results
+    #   uses: dorny/test-reporter@v1
+    #   if: always()
+    #   with:
+    #     name: Unit Test Results
+    #     path: '**/test-results.trx'
+    #     reporter: dotnet-trx
+    #     fail-on-error: true
 
     - name: Pack NuGet package
       shell: pwsh

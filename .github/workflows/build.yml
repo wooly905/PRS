@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: write
+  pull-requests: write
+    
 jobs:
   build:
     runs-on: windows-latest  
@@ -70,6 +74,7 @@ jobs:
       run: |
         git config user.name "prs"
         git config user.email "prs@example.com"
+        gh auth setup-git
         
         # Delete remote branch if it exists
         git push origin --delete $env:branch_name 2>&1 | Out-Null
@@ -85,6 +90,5 @@ jobs:
         BRANCH_NAME: ${{ env.branch_name }} 
       shell: pwsh
       run: |
-        gh auth setup-git
         gh pr create --title "Update revision number" --body "Automated update of PackageVersion" --base main --head $env:branch_name
         gh pr merge --auto --merge --delete-branch
