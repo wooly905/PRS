@@ -105,14 +105,7 @@ internal static class OutputFormatter
         foreach (var col in columns.OrderBy(c => int.TryParse(c.OrdinalPosition, out var pos) ? pos : 0))
         {
             sb.Append($"  {col.ColumnName}");
-            sb.Append($" ({col.DataType}");
-            
-            if (!string.IsNullOrWhiteSpace(col.CharacterMaximumLength))
-            {
-                sb.Append($"({col.CharacterMaximumLength})");
-            }
-            
-            sb.Append(")");
+            sb.Append($" ({col.DataType})");
             
             if (col.IsNullable == "YES")
             {
@@ -132,10 +125,6 @@ internal static class OutputFormatter
             {
                 sb.AppendLine();
                 sb.Append($"    -> FK: {col.ReferencedTableSchema}.{col.ReferencedTableName}.{col.ReferencedColumnName}");
-                if (!string.IsNullOrWhiteSpace(col.ForeignKeyName))
-                {
-                    sb.Append($" ({col.ForeignKeyName})");
-                }
             }
 
             sb.AppendLine();

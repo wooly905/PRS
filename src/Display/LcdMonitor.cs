@@ -15,13 +15,12 @@ internal class LcdMonitor : IDisplay
         t.AddColumn("[bold yellow]Default[/]");
         t.AddColumn("[bold yellow]Nullable[/]");
         t.AddColumn("[bold yellow]DataType[/]");
-        t.AddColumn("[bold yellow]CharMaxLength[/]");
         t.AddColumn("[bold yellow]PK[/]");
         t.AddColumn("[bold yellow]Unique[/]");
         t.AddColumn("[bold yellow]Identity[/]");
-        t.AddColumn("[bold yellow]ForeignKeyName[/]");
-        t.AddColumn("[bold yellow]RefTableName[/]");
-        t.AddColumn("[bold yellow]RefColumnName[/]");
+        t.AddColumn("[bold yellow]FK[/]");
+        t.AddColumn("[bold yellow]FK.Table[/]");
+        t.AddColumn("[bold yellow]FK.Column[/]");
 
         foreach (ColumnModel model in models)
         {
@@ -35,11 +34,10 @@ internal class LcdMonitor : IDisplay
                      model.ColumnDefault ?? string.Empty,
                      model.IsNullable ?? string.Empty,
                      model.DataType ?? string.Empty,
-                     model.CharacterMaximumLength ?? string.Empty,
                      model.IsPrimaryKey ? "[bold green]YES[/]" : "NO",
                      model.IsUnique ? "[bold green]YES[/]" : "NO",
                      identityDisplay,
-                     model.ForeignKeyName ?? string.Empty,
+                     !string.IsNullOrEmpty(model.ReferencedTableName) ? "[bold green]YES[/]" : "NO",
                      model.ReferencedTableName ?? string.Empty,
                      model.ReferencedColumnName ?? string.Empty);
         }
