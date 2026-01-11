@@ -1,0 +1,115 @@
+name: prs-release
+on:
+  workflow_dispatch
+
+jobs:
+  build-test-publish:
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: PRS.sln
+      Project_Path: src/PRS.csproj
+      Tests_Path: tests/PRS.Tests.csproj
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    # Install the .NET Core workload
+    - name: Install .NET 8.0
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ env.Solution_Name }}
+
+    - name: Build solution
+      run: dotnet build ${{ env.Solution_Name }} -c Release --no-restore
+
+    - name: Run unit tests
+      run: dotnet test ${{ env.Tests_Path }} --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+    - name: Publish test results
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Unit Test Results
+        path: '**/test-results.trx'
+        reporter: dotnet-trx
+        fail-on-error: true
+
+    - name: Pack NuGet package
+      shell: pwsh
+      run: |
+        $workspaceDir = "${{ github.workspace }}"
+        $outputDir = Join-Path $workspaceDir "nupkg-output"
+        Write-Host "Workspace directory: $workspaceDir"
+        Write-Host "Output directory: $outputDir"
+        Write-Host "Project path: ${{ env.Project_Path }}"
+
+        # Ensure output directory exists
+        New-Item -ItemType Directory -Force -Path $outputDir | Out-Null
+
+        # Pack with explicit output path (no rebuild; already built)
+        dotnet pack "${{ env.Project_Path }}" -c Release --no-build -p:PackageOutputPath="$outputDir"
+
+        if ($LASTEXITCODE -ne 0) {
+          Write-Host "ERROR: Pack failed with exit code $LASTEXITCODE"
+          exit $LASTEXITCODE
+        }
+        Write-Host "Pack completed successfully"
+
+    - name: Display package info
+      shell: pwsh
+      run: |
+        $workspaceDir = "${{ github.workspace }}"
+        $outputDir = Join-Path $workspaceDir "nupkg-output"
+        Write-Host "Looking for packages in: $outputDir"
+
+        if (Test-Path $outputDir) {
+          $packages = Get-ChildItem -Path $outputDir -Filter *.nupkg -ErrorAction SilentlyContinue
+          if ($packages) {
+            Write-Host "Found $($packages.Count) package(s):"
+            foreach ($pkg in $packages) {
+              Write-Host "  - $($pkg.Name) ($([math]::Round($pkg.Length / 1MB, 2)) MB)"
+            }
+          } else {
+            Write-Host "ERROR: No .nupkg files found in $outputDir"
+            Write-Host "Directory contents:"
+            Get-ChildItem $outputDir | ForEach-Object { Write-Host "  - $($_.Name)" }
+            exit 1
+          }
+        } else {
+          Write-Host "ERROR: Output directory does not exist: $outputDir"
+          exit 1
+        }
+
+    - name: Push to NuGet.org
+      shell: pwsh
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      run: |
+        $workspaceDir = "${{ github.workspace }}"
+        $outputDir = Join-Path $workspaceDir "nupkg-output"
+        $packages = Get-ChildItem -Path $outputDir -Filter *.nupkg -ErrorAction SilentlyContinue
+
+        if (-not $packages -or $packages.Count -eq 0) {
+          Write-Host "ERROR: No packages found to push in $outputDir"
+          exit 1
+        }
+
+        Write-Host "Found $($packages.Count) package(s) to push"
+
+        foreach ($package in $packages) {
+          Write-Host "Pushing package: $($package.Name)"
+          dotnet nuget push "$($package.FullName)" --api-key "$env:NUGET_API_KEY" --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+          if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 1) {
+            # Exit code 1 might be from --skip-duplicate, which is OK
+            Write-Host "ERROR: Failed to push $($package.Name) with exit code $LASTEXITCODE"
+            exit $LASTEXITCODE
+          }
+          Write-Host "Successfully pushed $($package.Name)"
+        }
