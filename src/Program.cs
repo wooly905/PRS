@@ -9,7 +9,11 @@ static class Program
 {
     static async Task Main(string[] args)
     {
-        if (args == null || args.Length == 0)
+        if (args == null
+            || args.Length == 0
+            || string.Equals(args[0], "--help", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(args[0], "-h", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(args[0], "help", StringComparison.OrdinalIgnoreCase))
         {
             DisplayHelp();
             return;
@@ -41,6 +45,7 @@ static class Program
         Console.WriteLine("Usage: prs [options] [argument]");
         Console.WriteLine();
         Console.WriteLine("Options:");
+        Console.WriteLine("--help, -h, help    Display all available commands.");
         Console.WriteLine("scs     Show MS SQL Server connection string.");
         Console.WriteLine("wcs     Write MS SQL Server connection string.");
         Console.WriteLine("dds     Dump db schema to local machine.");
