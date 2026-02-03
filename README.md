@@ -2,7 +2,7 @@
 
 [English](README.md) | [台灣中文](README_tw.md) | [日本語](README_ja.md)
 
-PRS is a powerful tool designed to bridge the gap between SQL Server databases and developers (or AI agents). It allows you to dump database schemas into local, human-readable Markdown files. These schemas can then be queried through a rich Command-Line Interface (CLI) or exposed to AI coding assistants (like Cursor, Claude Desktop, or Windsurf) via a Model Context Protocol (MCP) server.
+PRS is a powerful dotnet CLI tool designed to bridge the gap between SQL Server databases and developers (or AI agents). It allows you to dump database schemas into local, human-readable Markdown files. These schemas can then be queried through a rich Command-Line Interface (CLI) or exposed to AI coding assistants (like Cursor, Claude Desktop, or Windsurf) via a Model Context Protocol (MCP) server.
 
 ## Features
 
@@ -53,10 +53,76 @@ prs dds my_db_name
 
 ### 3. Explore via CLI
 
-- **Find a table**: `prs ft Order`
-- **Find a column**: `prs fc Email`
-- **Show table details**: `prs sc Users`
-- **Find stored procedures**: `prs fsp Search`
+Discover your database schema using these intuitive commands. Here are some examples using an `Orders` table:
+
+- **Find Tables** (`ft`): Search for tables or views by name.
+  ```bash
+  prs ft Orders
+  ```
+  **Output:**
+  ```text
+  ┌────────────────────┬────────────┐
+  │ TableName          │ TableType  │
+  ├────────────────────┼────────────┤
+  │ Orders             │ BASE TABLE │
+  │ OrdersTransactions │ BASE TABLE │
+  │ PrintOrders        │ BASE TABLE │
+  │ VDPOrders          │ BASE TABLE │
+  └────────────────────┴────────────┘
+  ```
+
+- **Find Columns** (`fc`): Search for a specific column across the entire database.
+  ```bash
+  prs fc OrderID
+  ```
+  **Output:**
+  ```text
+  ┌───────────────────────┬──────────────┬─────┬─────────┬──────────┬──────────┬─────┬────────┬────────────┬─────┬─────────────┬──────────────┐
+  │ Table                 │ Column       │ Pos │ Default │ Nullable │ DataType │ PK  │ Unique │ Identity   │ FK  │ FK.Table    │ FK.Column    │
+  ├───────────────────────┼──────────────┼─────┼─────────┼──────────┼──────────┼─────┼────────┼────────────┼─────┼─────────────┼──────────────┤
+  │ OrderAddresses        │ OrderId      │ 2   │         │ NO       │ bigint   │ NO  │ NO     │ NO         │ YES │ Orders      │ OrderId      │
+  │ OrderEmails           │ OrderId      │ 2   │         │ NO       │ int      │ NO  │ NO     │ NO         │ YES │ Orders      │ OrderId      │
+  │ Orders                │ OrderId      │ 1   │         │ NO       │ bigint   │ YES │ YES    │ YES (1, 1) │ NO  │             │              │
+  └───────────────────────┴──────────────┴─────┴─────────┴──────────┴──────────┴─────┴────────┴────────────┴─────┴─────────────┴──────────────┘
+  ```
+
+- **Find Columns in Table** (`ftc`): Search for specific columns within a single table.
+  ```bash
+  # prs ftc [table_name] [column_name_pattern]
+  prs ftc Orders Total
+  ```
+  **Output:**
+  ```text
+  ┌────────┬─────────────────┬─────┬─────────┬──────────┬──────────┬────┬────────┬──────────┬────┬──────────┬───────────┐
+  │ Table  │ Column          │ Pos │ Default │ Nullable │ DataType │ PK │ Unique │ Identity │ FK │ FK.Table │ FK.Column │
+  ├────────┼─────────────────┼─────┼─────────┼──────────┼──────────┼────┼────────┼──────────┼────┼──────────┼───────────┤
+  │ Orders │ TotalItemsPrice │ 8   │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  │ Orders │ TotalShipping   │ 9   │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  │ Orders │ TotalTaxAmount  │ 23  │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  │ Orders │ OrderTotal      │ 25  │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  └────────┴─────────────────┴─────┴─────────┴──────────┴──────────┴────┴────────┴──────────┴────┴──────────┴───────────┘
+  ```
+
+- **Show Table Details** (`sc`): List all columns and their properties for a specific table.
+  ```bash
+  prs sc Orders
+  ```
+  **Output (Partial):**
+  ```text
+  ┌────────┬──────────────────┬─────┬─────────┬──────────┬─────────────┬─────┬────────┬────────────┬─────┬────────────────┬────────────────┐
+  │ Table  │ Column           │ Pos │ Default │ Nullable │ DataType    │ PK  │ Unique │ Identity   │ FK  │ FK.Table       │ FK.Column      │
+  ├────────┼──────────────────┼─────┼─────────┼──────────┼─────────────┼─────┼────────┼────────────┼─────┼────────────────┼────────────────┤
+  │ Orders │ OrderId          │ 1   │         │ NO       │ bigint      │ YES │ YES    │ YES (1, 1) │ NO  │                │                │
+  │ Orders │ Created          │ 6   │         │ NO       │ datetime    │ NO  │ NO     │ NO         │ NO  │                │                │
+  │ Orders │ TotalTaxAmount   │ 23  │         │ NO       │ money       │ NO  │ NO     │ NO         │ NO  │                │                │
+  │ Orders │ BillingAddressId │ 11  │         │ YES      │ bigint      │ NO  │ NO     │ NO         │ YES │ OrderAddresses │ OrderAddressId │
+  └────────┴──────────────────┴─────┴─────────┴──────────┴─────────────┴─────┴────────┴────────────┴─────┴────────────────┴────────────────┘
+  ```
+
+- **Find Stored Procedures** (`fsp`): Search for stored procedures by name.
+  ```bash
+  prs fsp Search
+  ```
 
 ## AI Integration (MCP)
 

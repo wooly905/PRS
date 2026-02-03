@@ -53,10 +53,76 @@ prs dds my_db_name
 
 ### 3. CLI による探索
 
-- **テーブルを検索**: `prs ft Order`
-- **カラムを検索**: `prs fc Email`
-- **テーブルの詳細を表示**: `prs sc Users`
-- **ストアドプロシージャを検索**: `prs fsp Search`
+直感的なコマンドを使用して、データベーススキーマを探索します。以下は `Orders` テーブルを使用した例です：
+
+- **テーブルを検索** (`ft`): 名前でテーブルまたはビューを検索します。
+  ```bash
+  prs ft Orders
+  ```
+  **実行結果:**
+  ```text
+  ┌────────────────────┬────────────┐
+  │ TableName          │ TableType  │
+  ├────────────────────┼────────────┤
+  │ Orders             │ BASE TABLE │
+  │ OrdersTransactions │ BASE TABLE │
+  │ PrintOrders        │ BASE TABLE │
+  │ VDPOrders          │ BASE TABLE │
+  └────────────────────┴────────────┘
+  ```
+
+- **カラムを検索** (`fc`): データベース全体から特定のカラム名を検索します。
+  ```bash
+  prs fc OrderID
+  ```
+  **実行結果:**
+  ```text
+  ┌───────────────────────┬──────────────┬─────┬─────────┬──────────┬──────────┬─────┬────────┬────────────┬─────┬─────────────┬──────────────┐
+  │ Table                 │ Column       │ Pos │ Default │ Nullable │ DataType │ PK  │ Unique │ Identity   │ FK  │ FK.Table    │ FK.Column    │
+  ├───────────────────────┼──────────────┼─────┼─────────┼──────────┼──────────┼─────┼────────┼────────────┼─────┼─────────────┼──────────────┤
+  │ OrderAddresses        │ OrderId      │ 2   │         │ NO       │ bigint   │ NO  │ NO     │ NO         │ YES │ Orders      │ OrderId      │
+  │ OrderEmails           │ OrderId      │ 2   │         │ NO       │ int      │ NO  │ NO     │ NO         │ YES │ Orders      │ OrderId      │
+  │ Orders                │ OrderId      │ 1   │         │ NO       │ bigint   │ YES │ YES    │ YES (1, 1) │ NO  │             │              │
+  └───────────────────────┴──────────────┴─────┴─────────┴──────────┴──────────┴─────┴────────┴────────────┴─────┴─────────────┴──────────────┘
+  ```
+
+- **テーブル内のカラムを検索** (`ftc`): 特定のテーブル内でカラムを検索します。
+  ```bash
+  # prs ftc [テーブル名] [カラム名パターン]
+  prs ftc Orders Total
+  ```
+  **実行結果:**
+  ```text
+  ┌────────┬─────────────────┬─────┬─────────┬──────────┬──────────┬────┬────────┬──────────┬────┬──────────┬───────────┐
+  │ Table  │ Column          │ Pos │ Default │ Nullable │ DataType │ PK │ Unique │ Identity │ FK │ FK.Table │ FK.Column │
+  ├────────┼─────────────────┼─────┼─────────┼──────────┼──────────┼────┼────────┼──────────┼────┼──────────┼───────────┤
+  │ Orders │ TotalItemsPrice │ 8   │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  │ Orders │ TotalShipping   │ 9   │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  │ Orders │ TotalTaxAmount  │ 23  │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  │ Orders │ OrderTotal      │ 25  │         │ NO       │ money    │ NO │ NO     │ NO       │ NO │          │           │
+  └────────┴─────────────────┴─────┴─────────┴──────────┴──────────┴────┴────────┴──────────┴────┴──────────┴───────────┘
+  ```
+
+- **テーブルの詳細を表示** (`sc`): テーブルのすべてのカラムとその属性を表示します。
+  ```bash
+  prs sc Orders
+  ```
+  **実行結果 (一部):**
+  ```text
+  ┌────────┬──────────────────┬─────┬─────────┬──────────┬─────────────┬─────┬────────┬────────────┬─────┬────────────────┬────────────────┐
+  │ Table  │ Column           │ Pos │ Default │ Nullable │ DataType    │ PK  │ Unique │ Identity   │ FK  │ FK.Table       │ FK.Column      │
+  ├────────┼──────────────────┼─────┼─────────┼──────────┼─────────────┼─────┼────────┼────────────┼─────┼────────────────┼────────────────┤
+  │ Orders │ OrderId          │ 1   │         │ NO       │ bigint      │ YES │ YES    │ YES (1, 1) │ NO  │                │                │
+  │ Orders │ Created          │ 6   │         │ NO       │ datetime    │ NO  │ NO     │ NO         │ NO  │                │                │
+  │ Orders │ TotalTaxAmount   │ 23  │         │ NO       │ money       │ NO  │ NO     │ NO         │ NO  │                │                │
+  │ Orders │ BillingAddressId │ 11  │         │ YES      │ bigint      │ NO  │ NO     │ NO         │ YES │ OrderAddresses │ OrderAddressId │
+  └────────┴──────────────────┴─────┴─────────┴──────────┴─────────────┴─────┴────────┴────────────┴─────┴────────────────┴────────────────┘
+  ```
+
+- **ストアドプロシージャを検索** (`fsp`): 名前でストアドプロシージャを検索します。
+  ```bash
+  prs fsp Search
+  ```
 
 ## AI 統合 (MCP)
 
