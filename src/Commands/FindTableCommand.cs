@@ -11,11 +11,16 @@ internal class FindTableCommand(IDisplay display, IFileProvider fileProvider) : 
 
     public async Task RunAsync(string[] args)
     {
+        // Parse optional output format: prs ft <table> [-f <format>]
+        var (format, cleanArgs) = CommandHelper.ParseOutputFormat(args);
+
+        if (CommandHelper.RejectDdlFormat(format, _display)) return;
+
         // verify args
-        if (args == null || args.Length != 2)
+        if (cleanArgs == null || cleanArgs.Length != 2)
         {
             _display.ShowError("Argument mismatch");
-            _display.ShowInfo("prs ft [table name]");
+            _display.ShowInfo("prs ft [table name] [-f table|json|text]");
             return;
         }
 
@@ -31,11 +36,11 @@ internal class FindTableCommand(IDisplay display, IFileProvider fileProvider) : 
 
         // Use new Markdown reader API with partial string search
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
-        IEnumerable<TableModel> models = await reader.FindTablesAsync(args[1]);
+        IEnumerable<TableModel> models = await reader.FindTablesAsync(cleanArgs[1]);
 
         if (models.Any())
         {
-            CommandHelper.PrintTables(models, _display);
+            CommandHelper.PrintTables(models, _display, format);
         }
         else
         {

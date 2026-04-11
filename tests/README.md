@@ -4,11 +4,13 @@ This directory contains the automated test suite for the PRS project. We use [xU
 
 ## Structure
 
-- `Commands/`: Tests for the CLI commands.
+- `Commands/`: Tests for the CLI commands (including `-f` output format support).
 - `FileHandle/`: Tests for schema reading and writing logic.
 - `Mcp/`: Tests for the MCP server components.
 - `Services/`: Tests for business logic services.
 - `TestHelpers/`: Mock implementations and helper classes for testing.
+  - `TestDisplay`: Implements `IDisplay` with `OutputFormat` support for capturing output in tests.
+  - `TestFileHelper`: Manages temporary files during test execution.
 - `TestData/`: Sample schema files used in tests.
 
 ## Running Tests
@@ -67,5 +69,19 @@ public class MyFeatureTests : IDisposable
     {
         TestFileHelper.CleanupTempFiles();
     }
+}
+```
+
+### Testing Output Formats
+
+When testing commands that support output formats, `TestDisplay` captures output regardless of the format parameter. To test format-specific behavior, use `SchemaFormatter` directly:
+
+```csharp
+[Fact]
+public void FormatColumns_Ddl_ProducesValidSql()
+{
+    var columns = new List<ColumnModel> { /* ... */ };
+    string result = SchemaFormatter.FormatColumns(columns, OutputFormat.Ddl);
+    Assert.Contains("--", result);
 }
 ```

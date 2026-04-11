@@ -1,3 +1,4 @@
+using System.Reflection;
 using PRS.Commands;
 using PRS.Database;
 using PRS.Display;
@@ -40,24 +41,46 @@ static class Program
 
     static void DisplayHelp()
     {
-        Console.WriteLine();
+        string fullVersion = typeof(Program).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion ?? "unknown";
+        // Strip the +commitHash suffix appended by .NET SDK
+        string version = fullVersion.IndexOf('+') is int i and >= 0 ? fullVersion[..i] : fullVersion;
 
-        Console.WriteLine("Usage: prs [options] [argument]");
         Console.WriteLine();
-        Console.WriteLine("Options:");
-        Console.WriteLine("--help, -h, help    Display all available commands.");
-        Console.WriteLine("scs     Show MS SQL Server connection string.");
-        Console.WriteLine("wcs     Write MS SQL Server connection string.");
-        Console.WriteLine("dds     Dump db schema to local machine.");
-        Console.WriteLine("ls      List saved schemas and show active one.");
-        Console.WriteLine("use     Switch active schema. prs use [schema name]");
-        Console.WriteLine("rm      Remove a schema. prs rm [schema name]");
-        Console.WriteLine("ft      Find table(s) (view).");
-        Console.WriteLine("fc      Find column(s).");
-        Console.WriteLine("ftc     Find column(s) in some table (view).");
-        Console.WriteLine("fsp     Find stored procedure.");
-        Console.WriteLine("sc      Show all columns in a table.");
-
+        Console.WriteLine($"prs - SQL Server Schema Query Tool v{version}");
+        Console.WriteLine();
+        Console.WriteLine("Usage: prs <command> [arguments] [-f <format>]");
+        Console.WriteLine();
+        Console.WriteLine("Setup:");
+        Console.WriteLine("  scs                           Show saved connection string");
+        Console.WriteLine("  wcs <connection-string>       Save connection string");
+        Console.WriteLine("  dds <schema-name>             Dump database schema to local file");
+        Console.WriteLine();
+        Console.WriteLine("Schema Management:");
+        Console.WriteLine("  ls                            List all saved schemas (* = active)");
+        Console.WriteLine("  use <schema-name>             Switch active schema");
+        Console.WriteLine("  rm  <schema-name>             Remove a saved schema");
+        Console.WriteLine();
+        Console.WriteLine("Query (partial match, case-insensitive):");
+        Console.WriteLine("  ft  <keyword>                 Find tables by name");
+        Console.WriteLine("  fc  <keyword>                 Find columns by name across all tables");
+        Console.WriteLine("  ftc <table> <column>          Find columns in matching tables");
+        Console.WriteLine("  sc  <table-name>              Show all columns in a table (exact match)");
+        Console.WriteLine("  fsp <keyword>                 Find stored procedures by name");
+        Console.WriteLine();
+        Console.WriteLine("Output Format [-f]:");
+        Console.WriteLine("  table   Formatted table with borders (default for all commands)");
+        Console.WriteLine("  json    JSON structured format       (all query commands)");
+        Console.WriteLine("  text    Plain text format             (all query commands)");
+        Console.WriteLine("  ddl     SQL DDL (CREATE TABLE)        (sc only)");
+        Console.WriteLine();
+        Console.WriteLine("Examples:");
+        Console.WriteLine("  prs dds mydb                  Dump schema from connected database");
+        Console.WriteLine("  prs ft user                   Find tables containing \"user\"");
+        Console.WriteLine("  prs sc Orders -f ddl          Show Orders table as CREATE TABLE DDL");
+        Console.WriteLine("  prs fc email -f json          Find columns matching \"email\" in JSON");
+        Console.WriteLine("  prs ftc Order Status -f text  Find \"Status\" columns in \"Order\" tables");
         Console.WriteLine();
     }
 }

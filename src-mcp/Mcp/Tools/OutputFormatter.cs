@@ -1,5 +1,5 @@
-using System.Text;
 using PRS.Database;
+using PRS.Formatting;
 using PRS.McpServer.Services;
 
 namespace PRS.McpServer.Mcp.Tools;
@@ -7,138 +7,53 @@ namespace PRS.McpServer.Mcp.Tools;
 internal static class OutputFormatter
 {
     /// <summary>
-    /// Formats table search results for human reading
+    /// Valid format values for MCP search tools (ddl is excluded — only meaningful for single-table schema).
     /// </summary>
-    public static string FormatTables(IEnumerable<TableModel> tables)
+    public const string McpSearchFormatEnum = "json, text";
+
+    /// <summary>
+    /// Valid format values for MCP get_table_schema tool (ddl is the default).
+    /// </summary>
+    public const string McpSchemaFormatEnum = "ddl, json, text";
+
+    /// <summary>
+    /// Formats table search results using the specified format.
+    /// </summary>
+    public static string FormatTables(IEnumerable<TableModel> tables, OutputFormat format = OutputFormat.Json)
     {
-        if (!tables.Any())
-        {
-            return "No tables found.";
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine($"Found {tables.Count()} table(s):");
-        sb.AppendLine();
-
-        foreach (var table in tables)
-        {
-            sb.AppendLine($"  Schema: {table.TableSchema}");
-            sb.AppendLine($"  Table: {table.TableName}");
-            sb.AppendLine($"  Type: {table.TableType}");
-            sb.AppendLine();
-        }
-
-        return sb.ToString().TrimEnd();
+        return SchemaFormatter.FormatTables(tables, format);
     }
 
     /// <summary>
-    /// Formats column search results for human reading
+    /// Formats column search results using the specified format.
     /// </summary>
-    public static string FormatColumns(IEnumerable<ColumnModel> columns)
+    public static string FormatColumns(IEnumerable<ColumnModel> columns, OutputFormat format = OutputFormat.Json)
     {
-        if (!columns.Any())
-        {
-            return "No columns found.";
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine($"Found {columns.Count()} column(s):");
-        sb.AppendLine();
-
-        foreach (var col in columns)
-        {
-            sb.AppendLine($"  Schema: {col.TableSchema}");
-            sb.AppendLine($"  Table: {col.TableName}");
-            sb.AppendLine($"  Column: {col.ColumnName}");
-            sb.AppendLine($"  Data Type: {col.DataType}");
-            sb.AppendLine($"  Nullable: {col.IsNullable}");
-            
-            if (!string.IsNullOrWhiteSpace(col.ReferencedTableName))
-            {
-                sb.AppendLine($"  Foreign Key: {col.ReferencedTableSchema}.{col.ReferencedTableName}.{col.ReferencedColumnName}");
-            }
-            
-            sb.AppendLine();
-        }
-
-        return sb.ToString().TrimEnd();
+        return SchemaFormatter.FormatColumns(columns, format);
     }
 
     /// <summary>
-    /// Formats stored procedure search results for human reading
+    /// Formats stored procedure search results using the specified format.
     /// </summary>
-    public static string FormatStoredProcedures(IEnumerable<string> procedures)
+    public static string FormatStoredProcedures(IEnumerable<string> procedures, OutputFormat format = OutputFormat.Json)
     {
-        if (!procedures.Any())
-        {
-            return "No stored procedures found.";
-        }
-
-        var sb = new StringBuilder();
-        sb.AppendLine($"Found {procedures.Count()} stored procedure(s):");
-        sb.AppendLine();
-
-        foreach (var proc in procedures)
-        {
-            sb.AppendLine($"  {proc}");
-        }
-
-        return sb.ToString().TrimEnd();
+        return SchemaFormatter.FormatStoredProcedures(procedures, format);
     }
 
     /// <summary>
-    /// Formats table schema details for human reading
+    /// Formats table schema details using the specified format.
     /// </summary>
-    public static string FormatTableSchema(IEnumerable<ColumnModel> columns, string tableName, string schema, bool found)
+    public static string FormatTableSchema(IEnumerable<ColumnModel> columns, string tableName, string? schema, bool found, OutputFormat format = OutputFormat.Ddl)
     {
-        if (!found || !columns.Any())
-        {
-            return $"Table '{tableName}' not found" + (schema != "unknown" ? $" in schema '{schema}'" : "");
-        }
-
-        var sb = new StringBuilder();
-        var firstColumn = columns.First();
-        sb.AppendLine($"Table: {firstColumn.TableSchema}.{firstColumn.TableName}");
-        sb.AppendLine($"Columns ({columns.Count()}):");
-        sb.AppendLine();
-
-        foreach (var col in columns.OrderBy(c => int.TryParse(c.OrdinalPosition, out var pos) ? pos : 0))
-        {
-            sb.Append($"  {col.ColumnName}");
-            sb.Append($" ({col.DataType})");
-            
-            if (col.IsNullable == "YES")
-            {
-                sb.Append(" NULL");
-            }
-            else
-            {
-                sb.Append(" NOT NULL");
-            }
-
-            if (!string.IsNullOrWhiteSpace(col.ColumnDefault))
-            {
-                sb.Append($" DEFAULT {col.ColumnDefault}");
-            }
-
-            if (!string.IsNullOrWhiteSpace(col.ReferencedTableName))
-            {
-                sb.AppendLine();
-                sb.Append($"    -> FK: {col.ReferencedTableSchema}.{col.ReferencedTableName}.{col.ReferencedColumnName}");
-            }
-
-            sb.AppendLine();
-        }
-
-        return sb.ToString().TrimEnd();
+        return SchemaFormatter.FormatTableSchema(columns, tableName, schema, found, format);
     }
 
     /// <summary>
-    /// Formats schema list for human reading
+    /// Formats schema list for human reading (no format variants for meta-operations).
     /// </summary>
     public static string FormatSchemas(string? activeSchema, IEnumerable<SchemaInfo> schemas)
     {
-        var sb = new StringBuilder();
+        var sb = new System.Text.StringBuilder();
         sb.AppendLine($"Active Schema: {activeSchema ?? "None"}");
         sb.AppendLine();
         sb.AppendLine($"Available Schemas ({schemas.Count()}):");
@@ -154,7 +69,7 @@ internal static class OutputFormatter
     }
 
     /// <summary>
-    /// Formats schema switch result for human reading
+    /// Formats schema switch result for human reading.
     /// </summary>
     public static string FormatSchemaSwitch(bool success, string message, string? activeSchema)
     {
@@ -167,5 +82,40 @@ internal static class OutputFormatter
             return $"Failed to switch schema: {message}";
         }
     }
-}
 
+    /// <summary>
+    /// Parses the output_format argument for search tools.
+    /// Default is JSON. DDL is rejected (falls back to JSON).
+    /// </summary>
+    public static OutputFormat ParseMcpSearchFormat(Dictionary<string, object?> arguments)
+    {
+        if (arguments.TryGetValue("output_format", out var formatObj) && formatObj != null)
+        {
+            var parsed = SchemaFormatter.ParseFormat(formatObj.ToString());
+            if (parsed.HasValue && parsed.Value != OutputFormat.Table && parsed.Value != OutputFormat.Ddl)
+            {
+                return parsed.Value;
+            }
+        }
+
+        return OutputFormat.Json;
+    }
+
+    /// <summary>
+    /// Parses the output_format argument for get_table_schema tool.
+    /// Default is DDL (CREATE TABLE), optimal for LLM consumption.
+    /// </summary>
+    public static OutputFormat ParseMcpSchemaFormat(Dictionary<string, object?> arguments)
+    {
+        if (arguments.TryGetValue("output_format", out var formatObj) && formatObj != null)
+        {
+            var parsed = SchemaFormatter.ParseFormat(formatObj.ToString());
+            if (parsed.HasValue && parsed.Value != OutputFormat.Table)
+            {
+                return parsed.Value;
+            }
+        }
+
+        return OutputFormat.Ddl;
+    }
+}

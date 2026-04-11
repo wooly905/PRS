@@ -18,6 +18,18 @@ PRS MCP Server provides the following tools:
 - **list_schemas**: List all available schemas and show the currently active schema
 - **use_schema**: Switch the currently active schema
 
+### Output Format
+
+Tools support an `output_format` parameter to control the response format:
+
+| Format | Available for | Description |
+|---|---|---|
+| `json` | All search tools **(default)** | JSON structured format |
+| `text` | All search tools | Human-readable plain text |
+| `ddl` | `get_table_schema` only **(default)** | SQL DDL (`CREATE TABLE`) statement |
+
+`get_table_schema` defaults to `ddl` because a CREATE TABLE statement is the most token-efficient and natural representation of a single table's schema for LLMs. Search tools (`find_table`, `find_column`, `find_stored_procedure`) default to `json` since their results span multiple objects where DDL is not applicable.
+
 ### Resources
 
 - **Schema Resources**: Expose schema files as resources, allowing direct reading of schema content
@@ -124,6 +136,7 @@ Search for tables whose names contain the specified keyword.
 
 **Parameters**:
 - `keyword` (string, required): The keyword to search for
+- `output_format` (string, optional): Output format — `json` (default) or `text`
 
 **Returns**: List of matching tables, including schema, name, and type
 
@@ -133,6 +146,7 @@ Search for columns whose names contain the specified keyword across all tables.
 
 **Parameters**:
 - `keyword` (string, required): The keyword to search for
+- `output_format` (string, optional): Output format — `json` (default) or `text`
 
 **Returns**: List of matching columns, including table, column name, data type, and foreign key information
 
@@ -142,6 +156,7 @@ Search for stored procedures whose names contain the specified keyword.
 
 **Parameters**:
 - `keyword` (string, required): The keyword to search for
+- `output_format` (string, optional): Output format — `json` (default) or `text`
 
 **Returns**: List of matching stored procedure names
 
@@ -152,8 +167,40 @@ Get complete structure information for a specified table.
 **Parameters**:
 - `tableName` (string, required): Table name
 - `schema` (string, optional): Schema name (e.g., 'dbo'). If not provided, will search in all schemas
+- `output_format` (string, optional): Output format — `ddl` (default), `json`, or `text`
 
 **Returns**: Complete table structure, including detailed information for all columns
+
+**Example (DDL, default)**:
+```sql
+CREATE TABLE dbo.Users (
+    UserId int NOT NULL IDENTITY(1,1),
+    Email nvarchar(255) NOT NULL,
+    DisplayName nvarchar(100) NULL,
+    DepartmentId int NOT NULL,
+    CONSTRAINT PK_Users PRIMARY KEY (UserId),
+    CONSTRAINT FK_Users_DepartmentId FOREIGN KEY (DepartmentId) REFERENCES dbo.Departments(DepartmentId)
+);
+```
+
+**Example (JSON)**:
+```json
+{
+  "tableName": "Users",
+  "schema": "dbo",
+  "found": true,
+  "columns": [
+    {
+      "name": "UserId",
+      "dataType": "int",
+      "isNullable": false,
+      "ordinalPosition": 1,
+      "isPrimaryKey": true,
+      "isIdentity": true
+    }
+  ]
+}
+```
 
 ### list_schemas
 
@@ -172,11 +219,29 @@ Switch the currently active schema. Subsequent queries will use this schema.
 
 **Returns**: Switch result and the new active schema name
 
+## Claude Code Skill
+
+PRS includes two ready-made Claude Code skills. For MCP server users, use the MCP variant at [`skills/claude-code/query-schema-mcp.md`](../skills/claude-code/query-schema-mcp.md):
+
+```bash
+cp skills/claude-code/query-schema-mcp.md /path/to/your-project/.claude/commands/
+```
+
+A CLI variant ([`query-schema-cli.md`](../skills/claude-code/query-schema-cli.md)) is also available for users who have `prs` installed as a dotnet global tool but don't use the MCP server.
+
+Both skills teach Claude to verify the active schema first, use DDL format for understanding, trace FK relationships, and ground SQL queries in actual schema definitions.
+
+```
+/query-schema-mcp Show me all columns in the Orders table
+/query-schema-cli How are Users and Orders related?
+```
+
 ## Notes
 
 1. **Schema File Location**: Schema files are stored in the `%APPDATA%\.prs\schemas\` directory
 2. **Active Schema**: All query tools use the currently active schema. Use the `use_schema` tool to switch the active schema
-3. **Error Handling**: If a schema file does not exist or a query fails, the tool will return an appropriate error message
+3. **Output Format**: The default `ddl` format is optimized for LLM consumption. Use `json` when you need structured data for programmatic processing
+4. **Error Handling**: If a schema file does not exist or a query fails, the tool will return an appropriate error message
 
 ## Troubleshooting
 
@@ -210,6 +275,7 @@ src-mcp/
 │   ├── McpServer.cs        # MCP protocol core
 │   ├── IMcpTool.cs         # Tool interface
 │   ├── Tools/              # MCP Tools
+│   │   └── OutputFormatter.cs  # Format routing (DDL/JSON/Text)
 │   └── Resources/          # MCP Resources
 └── Services/
     └── SchemaService.cs    # Schema service
@@ -218,5 +284,6 @@ src-mcp/
 ### Adding New Tools
 
 1. Create a new Tool class implementing the `IMcpTool` interface
-2. Register the new tool in `Program.cs`
-3. Update this README file
+2. Include `output_format` parameter support via `OutputFormatter.ParseMcpFormat()`
+3. Register the new tool in `Program.cs`
+4. Update this README file

@@ -1,3 +1,4 @@
+using PRS;
 using PRS.Database;
 using PRS.Display;
 
@@ -24,7 +25,7 @@ public class TestDisplay : IDisplay
         AllMessages.Add($"[INFO] {message}");
     }
 
-    public void DisplayColumns(IEnumerable<ColumnModel> models)
+    public void DisplayColumns(IEnumerable<ColumnModel> models, OutputFormat format = OutputFormat.Table)
     {
         foreach (var model in models)
         {
@@ -34,11 +35,31 @@ public class TestDisplay : IDisplay
         }
     }
 
-    public void DisplayTables(IEnumerable<TableModel> models)
+    public void DisplayTableSchema(IEnumerable<ColumnModel> columns, string tableName, OutputFormat format = OutputFormat.Table)
+    {
+        foreach (var model in columns)
+        {
+            var message = $"Column: {model.TableName}.{model.ColumnName} ({model.DataType})";
+            InfoMessages.Add(message);
+            AllMessages.Add($"[INFO] {message}");
+        }
+    }
+
+    public void DisplayTables(IEnumerable<TableModel> models, OutputFormat format = OutputFormat.Table)
     {
         foreach (var model in models)
         {
             var message = $"Table: {model.TableName} ({model.TableType})";
+            InfoMessages.Add(message);
+            AllMessages.Add($"[INFO] {message}");
+        }
+    }
+
+    public void DisplayStoredProcedures(IEnumerable<string> procedures, OutputFormat format = OutputFormat.Table)
+    {
+        foreach (var proc in procedures)
+        {
+            var message = $"StoredProcedure: {proc}";
             InfoMessages.Add(message);
             AllMessages.Add($"[INFO] {message}");
         }

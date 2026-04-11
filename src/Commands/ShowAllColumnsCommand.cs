@@ -11,11 +11,14 @@ internal class ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvide
 
     public async Task RunAsync(string[] args)
     {
+        // Parse optional output format: prs sc <table> [-f <format>]
+        var (format, cleanArgs) = CommandHelper.ParseOutputFormat(args);
+
         // verify args
-        if (args == null || args.Length != 2)
+        if (cleanArgs == null || cleanArgs.Length != 2)
         {
             _display.ShowError("Argument mismatch");
-            _display.ShowInfo("prs sc [table name]");
+            _display.ShowInfo("prs sc [table name] [-f table|ddl|json|text]");
             return;
         }
 
@@ -31,13 +34,13 @@ internal class ShowAllColumnsCommand(IDisplay display, IFileProvider fileProvide
 
         // Use new Markdown reader API with exact table name match
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
-        IEnumerable<ColumnModel> models = await reader.ReadColumnsForTableAsync(args[1]);
+        IEnumerable<ColumnModel> models = await reader.ReadColumnsForTableAsync(cleanArgs[1]);
 
         if (models.Any())
         {
             // Sort columns by name alphabetically before displaying
             var sortedModels = models.OrderBy(m => m.ColumnName, StringComparer.OrdinalIgnoreCase);
-            CommandHelper.PrintColumns(sortedModels, _display);
+            CommandHelper.PrintTableSchema(sortedModels, cleanArgs[1], _display, format);
         }
         else
         {

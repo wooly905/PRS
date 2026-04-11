@@ -2,6 +2,7 @@ namespace PRS.Database;
 
 public class ColumnModel
 {
+    public string TableSchema { get; set; }
     public string TableName { get; set; }
     public string ColumnName { get; set; }
     public string OrdinalPosition {get;set;}
@@ -20,6 +21,7 @@ public class ColumnModel
 
     // Foreign key info (optional). Empty/null when the column is not a foreign key.
     public string ForeignKeyName { get; set; }
+    public string ReferencedTableSchema { get; set; }
     public string ReferencedTableName { get; set; }
     public string ReferencedColumnName { get; set; }
 }

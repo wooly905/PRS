@@ -1,6 +1,7 @@
 ﻿using PRS.Database;
 using PRS.Display;
 using PRS.FileHandle;
+using PRS.Formatting;
 
 namespace PRS.Commands;
 
@@ -178,23 +179,68 @@ internal static class CommandHelper
         return string.Empty;
     }
 
-    public static void PrintColumns(IEnumerable<ColumnModel> models, IDisplay display)
+    public static void PrintColumns(IEnumerable<ColumnModel> models, IDisplay display, OutputFormat format = OutputFormat.Table)
     {
-        display.DisplayColumns(models);
+        display.DisplayColumns(models, format);
     }
 
-    public static void PrintTables(IEnumerable<TableModel> models, IDisplay display)
+    public static void PrintTableSchema(IEnumerable<ColumnModel> columns, string tableName, IDisplay display, OutputFormat format = OutputFormat.Table)
     {
-        display.DisplayTables(models);
+        display.DisplayTableSchema(columns, tableName, format);
     }
 
-    public static void PrintModel(IEnumerable<string> models, IDisplay display)
+    public static void PrintTables(IEnumerable<TableModel> models, IDisplay display, OutputFormat format = OutputFormat.Table)
     {
-        display.ShowInfo("Name ===");
+        display.DisplayTables(models, format);
+    }
 
-        foreach (string m in models)
+    public static void PrintStoredProcedures(IEnumerable<string> models, IDisplay display, OutputFormat format = OutputFormat.Table)
+    {
+        display.DisplayStoredProcedures(models, format);
+    }
+
+    /// <summary>
+    /// Extracts the output format from command-line args if specified via "-f &lt;format&gt;".
+    /// Returns the parsed format and the args with the -f flag removed.
+    /// CLI default is Table.
+    /// </summary>
+    public static (OutputFormat Format, string[] CleanArgs) ParseOutputFormat(string[] args)
+    {
+        if (args == null || args.Length < 3)
         {
-            display.ShowInfo(m);
+            return (OutputFormat.Table, args ?? []);
         }
+
+        // Check if the last two args are "-f <format>"
+        if (string.Equals(args[^2], "-f", StringComparison.OrdinalIgnoreCase))
+        {
+            var parsed = Formatting.SchemaFormatter.ParseFormat(args[^1]);
+
+            if (parsed.HasValue)
+            {
+                // Remove the last two args
+                string[] cleanArgs = args[..^2];
+                return (parsed.Value, cleanArgs);
+            }
+        }
+
+        return (OutputFormat.Table, args);
+    }
+
+    /// <summary>
+    /// Validates that the DDL format is not used with search commands.
+    /// DDL (CREATE TABLE) only makes sense for single-table schema display (sc command).
+    /// Returns true if the format is valid, false if DDL was rejected.
+    /// </summary>
+    public static bool RejectDdlFormat(OutputFormat format, IDisplay display)
+    {
+        if (format == OutputFormat.Ddl)
+        {
+            display.ShowError("The 'ddl' format is only supported by the 'sc' command.");
+            display.ShowInfo("Use -f table, -f json, or -f text instead.");
+            return true;
+        }
+
+        return false;
     }
 }

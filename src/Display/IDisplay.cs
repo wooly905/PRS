@@ -8,7 +8,11 @@ internal interface IDisplay
 
     void ShowError(string message);
 
-    void DisplayColumns(IEnumerable<ColumnModel> models);
+    void DisplayColumns(IEnumerable<ColumnModel> models, OutputFormat format = OutputFormat.Table);
 
-    void DisplayTables(IEnumerable<TableModel> models);
+    void DisplayTableSchema(IEnumerable<ColumnModel> columns, string tableName, OutputFormat format = OutputFormat.Table);
+
+    void DisplayTables(IEnumerable<TableModel> models, OutputFormat format = OutputFormat.Table);
+
+    void DisplayStoredProcedures(IEnumerable<string> procedures, OutputFormat format = OutputFormat.Table);
 }

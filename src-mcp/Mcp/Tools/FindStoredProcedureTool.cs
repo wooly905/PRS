@@ -29,6 +29,12 @@ internal class FindStoredProcedureTool : IMcpTool
                     {
                         type = "string",
                         description = "Keyword to search for in stored procedure names"
+                    },
+                    output_format = new
+                    {
+                        type = "string",
+                        description = $"Output format: {OutputFormatter.McpSearchFormatEnum} (default: json). Use 'json' for structured data, 'text' for human-readable format",
+                        @enum = new[] { "json", "text" }
                     }
                 },
                 required = new[] { "keyword" }
@@ -44,11 +50,11 @@ internal class FindStoredProcedureTool : IMcpTool
         }
 
         string keyword = keywordObj.ToString() ?? string.Empty;
+        var format = OutputFormatter.ParseMcpSearchFormat(arguments);
         var procedures = await _schemaService.FindStoredProceduresAsync(keyword);
 
         var procedureList = procedures.ToList();
 
-        // Return both human-readable format and structured data for LLM
         return new
         {
             content = new[]
@@ -56,7 +62,7 @@ internal class FindStoredProcedureTool : IMcpTool
                 new
                 {
                     type = "text",
-                    text = OutputFormatter.FormatStoredProcedures(procedureList)
+                    text = OutputFormatter.FormatStoredProcedures(procedureList, format)
                 }
             },
             data = new
@@ -66,4 +72,3 @@ internal class FindStoredProcedureTool : IMcpTool
         };
     }
 }
-

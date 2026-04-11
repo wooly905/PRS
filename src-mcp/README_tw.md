@@ -18,6 +18,18 @@ PRS MCP Server 提供以下工具：
 - **list_schemas**: 列出所有可用的 schema 並顯示當前活動的 schema
 - **use_schema**: 切換當前活動的 schema
 
+### 輸出格式
+
+工具支援 `output_format` 參數來控制回應格式：
+
+| 格式 | 適用工具 | 說明 |
+|---|---|---|
+| `json` | 所有搜尋工具 **（預設）** | JSON 結構化格式 |
+| `text` | 所有搜尋工具 | 人類可讀的純文字格式 |
+| `ddl` | 僅 `get_table_schema` **（預設）** | SQL DDL（`CREATE TABLE`）語句 |
+
+`get_table_schema` 預設為 `ddl`，因為 CREATE TABLE 語句是 LLM 理解單一表格 schema 最省 token 且最自然的表示方式。搜尋工具（`find_table`、`find_column`、`find_stored_procedure`）預設為 `json`，因為其結果橫跨多個物件，DDL 不適用。
+
 ### 資源
 
 - **Schema Resources**: 將 schema 檔案作為資源公開，允許直接讀取 schema 內容
@@ -124,6 +136,7 @@ prs dds mydatabase
 
 **參數**:
 - `keyword` (string, 必填): 要搜尋的關鍵字
+- `output_format` (string, 選填): 輸出格式 — `json`（預設）或 `text`
 
 **傳回**: 匹配的表格列表，包含 schema、名稱和類型
 
@@ -133,6 +146,7 @@ prs dds mydatabase
 
 **參數**:
 - `keyword` (string, 必填): 要搜尋的關鍵字
+- `output_format` (string, 選填): 輸出格式 — `json`（預設）或 `text`
 
 **傳回**: 匹配的欄位列表，包含表格、欄位名稱、資料型別和外鍵資訊
 
@@ -142,6 +156,7 @@ prs dds mydatabase
 
 **參數**:
 - `keyword` (string, 必填): 要搜尋的關鍵字
+- `output_format` (string, 選填): 輸出格式 — `json`（預設）或 `text`
 
 **傳回**: 匹配的預存程序名稱列表
 
@@ -152,8 +167,40 @@ prs dds mydatabase
 **參數**:
 - `tableName` (string, 必填): 表格名稱
 - `schema` (string, 選填): Schema 名稱（例如 'dbo'）。如果不提供，會在所有 schemas 中搜尋
+- `output_format` (string, 選填): 輸出格式 — `ddl`（預設）、`json` 或 `text`
 
 **傳回**: 表格的完整結構，包含所有欄位的詳細資訊
+
+**範例（DDL，預設）**:
+```sql
+CREATE TABLE dbo.Users (
+    UserId int NOT NULL IDENTITY(1,1),
+    Email nvarchar(255) NOT NULL,
+    DisplayName nvarchar(100) NULL,
+    DepartmentId int NOT NULL,
+    CONSTRAINT PK_Users PRIMARY KEY (UserId),
+    CONSTRAINT FK_Users_DepartmentId FOREIGN KEY (DepartmentId) REFERENCES dbo.Departments(DepartmentId)
+);
+```
+
+**範例（JSON）**:
+```json
+{
+  "tableName": "Users",
+  "schema": "dbo",
+  "found": true,
+  "columns": [
+    {
+      "name": "UserId",
+      "dataType": "int",
+      "isNullable": false,
+      "ordinalPosition": 1,
+      "isPrimaryKey": true,
+      "isIdentity": true
+    }
+  ]
+}
+```
 
 ### list_schemas
 
@@ -172,11 +219,29 @@ prs dds mydatabase
 
 **傳回**: 切換結果和新的活動 schema 名稱
 
+## Claude Code Skill
+
+PRS 附帶兩個現成的 Claude Code skill。MCP 伺服器使用者請使用 MCP 版本，位於 [`skills/claude-code/query-schema-mcp.md`](../skills/claude-code/query-schema-mcp.md)：
+
+```bash
+cp skills/claude-code/query-schema-mcp.md /path/to/your-project/.claude/commands/
+```
+
+另有 CLI 版本（[`query-schema-cli.md`](../skills/claude-code/query-schema-cli.md)），適合已安裝 `prs` 為 dotnet 全域工具但未使用 MCP 伺服器的使用者。
+
+兩個 skill 都會教導 Claude 先驗證活動 schema、使用 DDL 格式理解架構、追蹤外鍵關係，並基於實際 schema 定義生成 SQL 查詢。
+
+```
+/query-schema-mcp 顯示 Orders 表格的所有欄位
+/query-schema-cli Users 和 Orders 之間有什麼關係？
+```
+
 ## 注意事項
 
 1. **Schema 檔案位置**: Schema 檔案儲存在 `%APPDATA%\.prs\schemas\` 目錄下
 2. **活動 Schema**: 所有查詢工具都會使用當前活動的 schema。使用 `use_schema` 工具可以切換活動的 schema
-3. **錯誤處理**: 如果 schema 檔案不存在或查詢失敗，工具會傳回適當的錯誤訊息
+3. **輸出格式**: 預設的 `ddl` 格式針對 LLM 使用進行最佳化。當您需要結構化資料進行程式化處理時，請使用 `json`
+4. **錯誤處理**: 如果 schema 檔案不存在或查詢失敗，工具會傳回適當的錯誤訊息
 
 ## 疑難排解
 
@@ -210,6 +275,7 @@ src-mcp/
 │   ├── McpServer.cs        # MCP 協議核心
 │   ├── IMcpTool.cs         # Tool 介面
 │   ├── Tools/              # MCP Tools
+│   │   └── OutputFormatter.cs  # 格式路由（DDL/JSON/Text）
 │   └── Resources/          # MCP Resources
 └── Services/
     └── SchemaService.cs    # Schema 服務
@@ -218,5 +284,6 @@ src-mcp/
 ### 新增工具
 
 1. 建立新的 Tool 類別，實作 `IMcpTool` 介面
-2. 在 `Program.cs` 中註冊新工具
-3. 更新此 README 文件
+2. 透過 `OutputFormatter.ParseMcpFormat()` 加入 `output_format` 參數支援
+3. 在 `Program.cs` 中註冊新工具
+4. 更新此 README 文件

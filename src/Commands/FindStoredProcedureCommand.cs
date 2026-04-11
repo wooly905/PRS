@@ -10,11 +10,16 @@ internal class FindStoredProcedureCommand(IDisplay display, IFileProvider filePr
 
     public async Task RunAsync(string[] args)
     {
+        // Parse optional output format: prs fsp <name> [-f <format>]
+        var (format, cleanArgs) = CommandHelper.ParseOutputFormat(args);
+
+        if (CommandHelper.RejectDdlFormat(format, _display)) return;
+
         // verify args
-        if (args == null || args.Length != 2)
+        if (cleanArgs == null || cleanArgs.Length != 2)
         {
             _display.ShowError("Argument mismatch");
-            _display.ShowInfo("prs fsp [stored procedure name]");
+            _display.ShowInfo("prs fsp [stored procedure name] [-f table|json|text]");
             return;
         }
 
@@ -31,15 +36,15 @@ internal class FindStoredProcedureCommand(IDisplay display, IFileProvider filePr
         // Use new Markdown reader API with partial string search
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
         IEnumerable<string> allProcedures = await reader.ReadStoredProceduresAsync();
-        
+
         // Filter by partial name match
         var models = allProcedures.Where(sp =>
-            sp?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0
+            sp?.IndexOf(cleanArgs[1], StringComparison.OrdinalIgnoreCase) >= 0
         ).ToList();
 
         if (models.Count > 0)
         {
-            CommandHelper.PrintModel(models, _display);
+            CommandHelper.PrintStoredProcedures(models, _display, format);
         }
         else
         {

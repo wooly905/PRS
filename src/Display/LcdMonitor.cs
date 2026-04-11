@@ -1,12 +1,19 @@
 using PRS.Database;
+using PRS.Formatting;
 using Spectre.Console;
 
 namespace PRS.Display;
 
 internal class LcdMonitor : IDisplay
 {
-    public void DisplayColumns(IEnumerable<ColumnModel> models)
+    public void DisplayColumns(IEnumerable<ColumnModel> models, OutputFormat format = OutputFormat.Table)
     {
+        if (format != OutputFormat.Table)
+        {
+            Console.WriteLine(SchemaFormatter.FormatColumns(models, format));
+            return;
+        }
+
         Table t = new();
 
         t.AddColumn("[bold yellow]Table[/]");
@@ -48,8 +55,26 @@ internal class LcdMonitor : IDisplay
         AnsiConsole.Write(t);
     }
 
-    public void DisplayTables(IEnumerable<TableModel> models)
+    public void DisplayTableSchema(IEnumerable<ColumnModel> columns, string tableName, OutputFormat format = OutputFormat.Table)
     {
+        if (format != OutputFormat.Table)
+        {
+            Console.WriteLine(SchemaFormatter.FormatTableSchema(columns, tableName, null, true, format));
+            return;
+        }
+
+        // Table format: reuse the column table display
+        DisplayColumns(columns, OutputFormat.Table);
+    }
+
+    public void DisplayTables(IEnumerable<TableModel> models, OutputFormat format = OutputFormat.Table)
+    {
+        if (format != OutputFormat.Table)
+        {
+            Console.WriteLine(SchemaFormatter.FormatTables(models, format));
+            return;
+        }
+
         List<string> properties = typeof(TableModel).GetProperties().Select(p => p.Name).ToList();
 
         Table t = new();
@@ -66,6 +91,31 @@ internal class LcdMonitor : IDisplay
         }
 
         t.Border = TableBorder.Rounded;
+
+        AnsiConsole.Write(t);
+    }
+
+    public void DisplayStoredProcedures(IEnumerable<string> procedures, OutputFormat format = OutputFormat.Table)
+    {
+        if (format != OutputFormat.Table)
+        {
+            Console.WriteLine(SchemaFormatter.FormatStoredProcedures(procedures, format));
+            return;
+        }
+
+        // Table format for stored procedures
+        var list = procedures.ToList();
+
+        Table t = new();
+        t.AddColumn("[bold yellow]Name[/]");
+
+        foreach (string proc in list)
+        {
+            t.AddRow(proc);
+        }
+
+        t.Border = TableBorder.Rounded;
+        t.Caption = new TableTitle($"{list.Count} records above");
 
         AnsiConsole.Write(t);
     }

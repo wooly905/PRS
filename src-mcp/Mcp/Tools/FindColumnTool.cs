@@ -31,6 +31,12 @@ internal class FindColumnTool : IMcpTool
                     {
                         type = "string",
                         description = "Keyword to search for in column names"
+                    },
+                    output_format = new
+                    {
+                        type = "string",
+                        description = $"Output format: {OutputFormatter.McpSearchFormatEnum} (default: json). Use 'json' for structured data, 'text' for human-readable format",
+                        @enum = new[] { "json", "text" }
                     }
                 },
                 required = new[] { "keyword" }
@@ -46,6 +52,7 @@ internal class FindColumnTool : IMcpTool
         }
 
         string keyword = keywordObj.ToString() ?? string.Empty;
+        var format = OutputFormatter.ParseMcpSearchFormat(arguments);
         var columns = await _schemaService.FindColumnsAsync(keyword);
 
         var columnList = columns.Select(c => new
@@ -64,7 +71,6 @@ internal class FindColumnTool : IMcpTool
             }
         }).ToList();
 
-        // Return both human-readable format and structured data for LLM
         return new
         {
             content = new[]
@@ -72,7 +78,7 @@ internal class FindColumnTool : IMcpTool
                 new
                 {
                     type = "text",
-                    text = OutputFormatter.FormatColumns(columns)
+                    text = OutputFormatter.FormatColumns(columns, format)
                 }
             },
             data = new
@@ -82,4 +88,3 @@ internal class FindColumnTool : IMcpTool
         };
     }
 }
-

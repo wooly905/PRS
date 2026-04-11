@@ -31,6 +31,12 @@ internal class FindTableTool : IMcpTool
                     {
                         type = "string",
                         description = "Keyword to search for in table names"
+                    },
+                    output_format = new
+                    {
+                        type = "string",
+                        description = $"Output format: {OutputFormatter.McpSearchFormatEnum} (default: json). Use 'json' for structured data, 'text' for human-readable format",
+                        @enum = new[] { "json", "text" }
                     }
                 },
                 required = new[] { "keyword" }
@@ -46,6 +52,7 @@ internal class FindTableTool : IMcpTool
         }
 
         string keyword = keywordObj.ToString() ?? string.Empty;
+        var format = OutputFormatter.ParseMcpSearchFormat(arguments);
         var tables = await _schemaService.FindTablesAsync(keyword);
 
         var tableList = tables.Select(t => new
@@ -55,7 +62,6 @@ internal class FindTableTool : IMcpTool
             type = t.TableType
         }).ToList();
 
-        // Return both human-readable format and structured data for LLM
         return new
         {
             content = new[]
@@ -63,7 +69,7 @@ internal class FindTableTool : IMcpTool
                 new
                 {
                     type = "text",
-                    text = OutputFormatter.FormatTables(tables)
+                    text = OutputFormatter.FormatTables(tables, format)
                 }
             },
             data = new
@@ -73,4 +79,3 @@ internal class FindTableTool : IMcpTool
         };
     }
 }
-

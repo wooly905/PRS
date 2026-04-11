@@ -11,11 +11,16 @@ internal class FindColumnCommand(IDisplay display, IFileProvider fileProvider) :
 
     public async Task RunAsync(string[] args)
     {
+        // Parse optional output format: prs fc <column> [-f <format>]
+        var (format, cleanArgs) = CommandHelper.ParseOutputFormat(args);
+
+        if (CommandHelper.RejectDdlFormat(format, _display)) return;
+
         // verify args
-        if (args == null || args.Length != 2)
+        if (cleanArgs == null || cleanArgs.Length != 2)
         {
             _display.ShowError("Argument mismatch");
-            _display.ShowInfo("prs fc [column name]");
+            _display.ShowInfo("prs fc [column name] [-f table|json|text]");
             return;
         }
 
@@ -31,11 +36,11 @@ internal class FindColumnCommand(IDisplay display, IFileProvider fileProvider) :
 
         // Use new Markdown reader API with partial string search
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
-        IEnumerable<ColumnModel> models = await reader.FindColumnsAsync(args[1]);
+        IEnumerable<ColumnModel> models = await reader.FindColumnsAsync(cleanArgs[1]);
 
         if (models.Any())
         {
-            CommandHelper.PrintColumns(models, _display);
+            CommandHelper.PrintColumns(models, _display, format);
         }
         else
         {

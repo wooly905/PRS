@@ -11,11 +11,16 @@ internal class FindTableColumnCommand(IDisplay display, IFileProvider fileProvid
 
     public async Task RunAsync(string[] args)
     {
+        // Parse optional output format: prs ftc <table> <column> [-f <format>]
+        var (format, cleanArgs) = CommandHelper.ParseOutputFormat(args);
+
+        if (CommandHelper.RejectDdlFormat(format, _display)) return;
+
         // verify args
-        if (args == null || args.Length != 3)
+        if (cleanArgs == null || cleanArgs.Length != 3)
         {
             _display.ShowError("Argument mismatch");
-            _display.ShowInfo("prs ftc [table name] [column name]");
+            _display.ShowInfo("prs ftc [table name] [column name] [-f table|json|text]");
             return;
         }
 
@@ -32,16 +37,16 @@ internal class FindTableColumnCommand(IDisplay display, IFileProvider fileProvid
         // Use new Markdown reader API with partial string search for both table and column
         using ISchemaReader reader = _fileProvider.GetSchemaReader(Global.SchemaFilePath);
         IEnumerable<ColumnModel> allColumns = await reader.ReadAllColumnsAsync();
-        
+
         // Filter by both table name and column name (partial match)
         var models = allColumns.Where(c =>
-            c.TableName?.IndexOf(args[1], StringComparison.OrdinalIgnoreCase) >= 0 &&
-            c.ColumnName?.IndexOf(args[2], StringComparison.OrdinalIgnoreCase) >= 0
+            c.TableName?.IndexOf(cleanArgs[1], StringComparison.OrdinalIgnoreCase) >= 0 &&
+            c.ColumnName?.IndexOf(cleanArgs[2], StringComparison.OrdinalIgnoreCase) >= 0
         ).ToList();
 
         if (models.Count > 0)
         {
-            CommandHelper.PrintColumns(models, _display);
+            CommandHelper.PrintColumns(models, _display, format);
         }
         else
         {

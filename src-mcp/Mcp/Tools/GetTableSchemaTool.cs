@@ -35,6 +35,12 @@ internal class GetTableSchemaTool : IMcpTool
                     {
                         type = "string",
                         description = "Optional schema name (e.g., 'dbo'). If not provided, will search in all schemas"
+                    },
+                    output_format = new
+                    {
+                        type = "string",
+                        description = $"Output format: {OutputFormatter.McpSchemaFormatEnum} (default: ddl). Use 'ddl' for LLM-friendly CREATE TABLE statement, 'json' for structured data, 'text' for human-readable format",
+                        @enum = new[] { "ddl", "json", "text" }
                     }
                 },
                 required = new[] { "tableName" }
@@ -53,6 +59,7 @@ internal class GetTableSchemaTool : IMcpTool
         string? schema = arguments.TryGetValue("schema", out var schemaObj) && schemaObj != null
             ? schemaObj.ToString()
             : null;
+        var format = OutputFormatter.ParseMcpSchemaFormat(arguments);
 
         var columns = await _schemaService.GetTableDetailsAsync(tableName, schema);
 
@@ -98,7 +105,6 @@ internal class GetTableSchemaTool : IMcpTool
             }
         }).OrderBy(c => c.ordinalPosition).ToList();
 
-        // Return both human-readable format and structured data for LLM
         return new
         {
             content = new[]
@@ -106,7 +112,7 @@ internal class GetTableSchemaTool : IMcpTool
                 new
                 {
                     type = "text",
-                    text = OutputFormatter.FormatTableSchema(columns, tableName, schemaName, true)
+                    text = OutputFormatter.FormatTableSchema(columns, tableName, schemaName, true, format)
                 }
             },
             data = new
@@ -119,4 +125,3 @@ internal class GetTableSchemaTool : IMcpTool
         };
     }
 }
-
