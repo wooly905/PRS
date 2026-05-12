@@ -71,9 +71,9 @@ static class Program
         Console.WriteLine();
         Console.WriteLine("Output Format [-f]:");
         Console.WriteLine("  table   Formatted table with borders (default for all commands)");
-        Console.WriteLine("  json    JSON structured format       (all query commands)");
-        Console.WriteLine("  text    Plain text format             (all query commands)");
-        Console.WriteLine("  ddl     SQL DDL (CREATE TABLE)        (sc only)");
+        Console.WriteLine("  json    JSON structured format        (all query commands, best for LLM tool/agent parsing)");
+        Console.WriteLine("  text    Plain text format             (all query commands, best for LLM reading)");
+        Console.WriteLine("  ddl     SQL DDL (CREATE TABLE)        (sc only, best for LLM schema understanding)");
         Console.WriteLine();
         Console.WriteLine("Examples:");
         Console.WriteLine("  prs dds mydb                  Dump schema from connected database");
