@@ -2,7 +2,7 @@
 
 [English](README.md) | [台灣中文](README_tw.md) | [日本語](README_ja.md)
 
-PRS is a powerful dotnet CLI tool designed to bridge the gap between SQL Server databases and developers (or AI agents). It allows you to dump database schemas into local, human-readable Markdown files. These schemas can then be queried through a rich Command-Line Interface (CLI) or exposed to AI coding assistants (like Cursor, Claude Desktop, or Windsurf) via a Model Context Protocol (MCP) server.
+PRS is a powerful dotnet CLI tool designed to bridge the gap between SQL Server databases and developers (or AI agents). It allows you to dump database schemas into local, human-readable Markdown files. These schemas can then be queried through a rich Command-Line Interface (CLI).
 
 ## Features
 
@@ -10,7 +10,6 @@ PRS is a powerful dotnet CLI tool designed to bridge the gap between SQL Server 
 - **AI-Enhanced**: Provide structured database context to LLMs without exposing your production database.
 - **Multi-Format Output**: Query results in `table`, `ddl`, `json`, or `text` format — optimized for both humans and LLMs.
 - **Rich CLI**: A comprehensive set of commands to search and explore your schemas.
-- **MCP Server**: Seamless integration with any AI tool that supports the Model Context Protocol.
 - **Fast & Lightweight**: Built on .NET 10.0 with minimal dependencies.
 
 ## Installation
@@ -172,70 +171,27 @@ Query commands support an optional `-f` flag to control output format:
   prs fsp Search
   ```
 
-## AI Integration (MCP)
-
-PRS includes an MCP server that allows AI agents to "see" your database schema.
-
-### Configuring Cursor / Claude Desktop
-
-Add this configuration to your `mcpServers` settings:
-
-```json
-{
-  "mcpServers": {
-    "prs": {
-      "command": "dotnet",
-      "args": [
-        "run",
-        "--project",
-        "C:\\path\\to\\PRS\\src-mcp\\PRS.McpServer.csproj"
-      ]
-    }
-  }
-}
-```
-
-Once configured, you can simply ask your AI:
-- "Explain the relationship between the `Users` and `Orders` tables."
-- "What columns are in the `Products` table?"
-- "Find any stored procedures related to user registration."
-
-The MCP server defaults to **DDL output format**, which is the most token-efficient and natural representation for LLMs. See [src-mcp/README.md](src-mcp/README.md) for full MCP tool documentation.
-
 ### Claude Code Skills (Slash Commands)
 
-PRS ships with two ready-made Claude Code skills that teach Claude how to query your database schema effectively. Choose the one that matches your setup:
-
-| Skill | File | How Claude queries schema |
-|---|---|---|
-| **CLI** | [`query-schema-cli.md`](skills/claude-code/query-schema-cli.md) | Runs `prs` commands in terminal (`prs ft`, `prs sc -f ddl`, etc.) |
-| **MCP** | [`query-schema-mcp.md`](skills/claude-code/query-schema-mcp.md) | Calls PRS MCP tools directly (`find_table`, `get_table_schema`, etc.) |
-
-**Use CLI** if you have `prs` installed as a dotnet global tool. **Use MCP** if you have the PRS MCP server configured in your AI tool.
+PRS ships with a ready-made Claude Code skill that teaches Claude how to query your database schema effectively using the CLI:
 
 Install:
 
 ```bash
-# CLI version — works anywhere prs is installed
 cp skills/claude-code/query-schema-cli.md /path/to/your-project/.claude/commands/
-
-# MCP version — requires PRS MCP server configured
-cp skills/claude-code/query-schema-mcp.md /path/to/your-project/.claude/commands/
 ```
 
 Then use in Claude Code:
 
 ```
 /query-schema-cli Show me all columns in the Orders table
-/query-schema-mcp How are Users and Orders related?
 ```
 
-Both skills guide Claude to verify the active schema, use DDL format for understanding, trace foreign key relationships, and ground SQL queries in actual schema definitions.
+This skill guides Claude to verify the active schema, use DDL format for understanding, trace foreign key relationships, and ground SQL queries in actual schema definitions.
 
 ## Project Structure
 
 - `src/`: Core logic and CLI tool.
-- `src-mcp/`: MCP Server implementation.
 - `tests/`: Extensive test suite for all components.
 
 ## Development & Testing

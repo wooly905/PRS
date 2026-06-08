@@ -8,7 +8,7 @@ public enum OutputFormat
     /// <summary>Spectre.Console table format (CLI default)</summary>
     Table,
 
-    /// <summary>SQL DDL (CREATE TABLE) format (MCP default, best for LLMs)</summary>
+    /// <summary>SQL DDL (CREATE TABLE) format (best for LLMs)</summary>
     Ddl,
 
     /// <summary>JSON format</summary>

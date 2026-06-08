@@ -7,8 +7,7 @@ using PRS.Database;
 namespace PRS.Formatting;
 
 /// <summary>
-/// Shared formatter that produces DDL, JSON, or Text representations of schema data.
-/// Used by both CLI and MCP tools.
+/// Formatter that produces DDL, JSON, or Text representations of schema data.
 /// </summary>
 public static class SchemaFormatter
 {
