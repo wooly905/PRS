@@ -54,6 +54,12 @@ internal static class CommandProvider
             return true;
         }
 
+        if (string.Equals(input, "lt", StringComparison.OrdinalIgnoreCase))
+        {
+            command = new ListTablesCommand(display, fileProvider);
+            return true;
+        }
+
         if (string.Equals(input, "fc", StringComparison.OrdinalIgnoreCase))
         {
             command = new FindColumnCommand(display, fileProvider);

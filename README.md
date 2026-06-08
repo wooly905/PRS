@@ -67,6 +67,7 @@ Schema Management:
   rm  <schema-name>             Remove a saved schema
 
 Query (partial match, case-insensitive):
+  lt                            List all tables in the active schema
   ft  <keyword>                 Find tables by name
   fc  <keyword>                 Find columns by name across all tables
   ftc <table> <column>          Find columns in matching tables
@@ -96,6 +97,24 @@ Query commands support an optional `-f` flag to control output format:
   ┌────────────────────┬────────────┐
   │ TableName          │ TableType  │
   ├────────────────────┼────────────┤
+  │ Orders             │ BASE TABLE │
+  │ OrdersTransactions │ BASE TABLE │
+  │ PrintOrders        │ BASE TABLE │
+  │ VDPOrders          │ BASE TABLE │
+  └────────────────────┴────────────┘
+  ```
+
+- **List All Tables** (`lt`): List all tables in the active schema.
+  ```bash
+  prs lt
+  ```
+  **Output:**
+  ```text
+  ┌────────────────────┬────────────┐
+  │ TableName          │ TableType  │
+  ├────────────────────┼────────────┤
+  │ OrderAddresses     │ BASE TABLE │
+  │ OrderEmails        │ BASE TABLE │
   │ Orders             │ BASE TABLE │
   │ OrdersTransactions │ BASE TABLE │
   │ PrintOrders        │ BASE TABLE │

@@ -67,6 +67,7 @@ prs dds my_db_name
   rm  <schema-name>             保存済みスキーマを削除
 
 クエリ（部分一致、大文字小文字区別なし）:
+  lt                            アクティブスキーマ内のすべてのテーブルを一覧表示
   ft  <keyword>                 名前でテーブルを検索
   fc  <keyword>                 全テーブルから名前でカラムを検索
   ftc <table> <column>          一致するテーブル内のカラムを検索
@@ -96,6 +97,24 @@ prs dds my_db_name
   ┌────────────────────┬────────────┐
   │ TableName          │ TableType  │
   ├────────────────────┼────────────┤
+  │ Orders             │ BASE TABLE │
+  │ OrdersTransactions │ BASE TABLE │
+  │ PrintOrders        │ BASE TABLE │
+  │ VDPOrders          │ BASE TABLE │
+  └────────────────────┴────────────┘
+  ```
+
+- **すべてのテーブルを一覧表示** (`lt`): アクティブスキーマ内のすべてのテーブルを一覧表示します。
+  ```bash
+  prs lt
+  ```
+  **実行結果:**
+  ```text
+  ┌────────────────────┬────────────┐
+  │ TableName          │ TableType  │
+  ├────────────────────┼────────────┤
+  │ OrderAddresses     │ BASE TABLE │
+  │ OrderEmails        │ BASE TABLE │
   │ Orders             │ BASE TABLE │
   │ OrdersTransactions │ BASE TABLE │
   │ PrintOrders        │ BASE TABLE │

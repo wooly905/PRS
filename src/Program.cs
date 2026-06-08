@@ -63,6 +63,7 @@ static class Program
         Console.WriteLine("  rm  <schema-name>             Remove a saved schema");
         Console.WriteLine();
         Console.WriteLine("Query (partial match, case-insensitive):");
+        Console.WriteLine("  lt                            List all tables in the active schema");
         Console.WriteLine("  ft  <keyword>                 Find tables by name");
         Console.WriteLine("  fc  <keyword>                 Find columns by name across all tables");
         Console.WriteLine("  ftc <table> <column>          Find columns in matching tables");
@@ -77,6 +78,8 @@ static class Program
         Console.WriteLine();
         Console.WriteLine("Examples:");
         Console.WriteLine("  prs dds mydb                  Dump schema from connected database");
+        Console.WriteLine("  prs lt                        List all tables in the active schema");
+        Console.WriteLine("  prs lt -f json                List all tables in JSON format");
         Console.WriteLine("  prs ft user                   Find tables containing \"user\"");
         Console.WriteLine("  prs sc Orders -f ddl          Show Orders table as CREATE TABLE DDL");
         Console.WriteLine("  prs fc email -f json          Find columns matching \"email\" in JSON");

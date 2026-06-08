@@ -67,6 +67,7 @@ Schema 管理:
   rm  <schema-name>             移除已儲存的 schema
 
 查詢（部分匹配，不區分大小寫）:
+  lt                            列出使用中 schema 的所有表格
   ft  <keyword>                 依名稱搜尋表格
   fc  <keyword>                 在所有表格中依名稱搜尋欄位
   ftc <table> <column>          在符合的表格中搜尋欄位
@@ -96,6 +97,24 @@ Schema 管理:
   ┌────────────────────┬────────────┐
   │ TableName          │ TableType  │
   ├────────────────────┼────────────┤
+  │ Orders             │ BASE TABLE │
+  │ OrdersTransactions │ BASE TABLE │
+  │ PrintOrders        │ BASE TABLE │
+  │ VDPOrders          │ BASE TABLE │
+  └────────────────────┴────────────┘
+  ```
+
+- **列出所有表格** (`lt`)：列出當前使用中 schema 的所有表格。
+  ```bash
+  prs lt
+  ```
+  **輸出：**
+  ```text
+  ┌────────────────────┬────────────┐
+  │ TableName          │ TableType  │
+  ├────────────────────┼────────────┤
+  │ OrderAddresses     │ BASE TABLE │
+  │ OrderEmails        │ BASE TABLE │
   │ Orders             │ BASE TABLE │
   │ OrdersTransactions │ BASE TABLE │
   │ PrintOrders        │ BASE TABLE │

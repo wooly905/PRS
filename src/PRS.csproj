@@ -27,8 +27,8 @@
         <RollForward>Major</RollForward>
 
         <PackageId>wooly905.prs</PackageId>
-        <Version>10.1.0.5</Version>
-        <PackageVersion>10.1.0.7</PackageVersion>
+        <Version>10.1.1.7</Version>
+        <PackageVersion>10.1.1.7</PackageVersion>
         <Authors>Bruce Lee</Authors>
         <AssemblyName>prs</AssemblyName>
 		<Description>A schema query tool for your database in Microsoft SQL Server</Description>
@@ -43,6 +43,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="PRS.Tests" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
 
 </Project>
