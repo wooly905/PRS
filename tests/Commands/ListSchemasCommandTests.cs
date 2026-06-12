@@ -82,10 +82,11 @@ public class ListSchemasCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_ShowsSchemaWithoutExtension()
+    public async Task RunAsync_WithJsonSchemas_ListsWithoutExtension()
     {
-        // Arrange
-        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/mydatabase.schema.md");
+        // Arrange: create .json schema files
+        File.WriteAllText(Path.Combine(_tempSchemasDir, "prod.schema.json"), "{}");
+        File.WriteAllText(Path.Combine(_tempSchemasDir, "staging.schema.json"), "{}");
 
         var command = new ListSchemasCommand(_display);
         var args = new[] { "ls" };
@@ -94,8 +95,53 @@ public class ListSchemasCommandTests : IDisposable
         await command.RunAsync(args);
 
         // Assert
-        Assert.True(_display.ContainsAnyMessage("mydatabase"));
-        Assert.False(_display.AllMessages.Any(m => m.Contains(".schema.md")));
+        Assert.True(_display.ContainsAnyMessage("Saved schemas:"));
+        Assert.True(_display.ContainsAnyMessage("prod"));
+        Assert.True(_display.ContainsAnyMessage("staging"));
+        // Should NOT show the full extension
+        Assert.False(_display.AllMessages.Any(m => m.Contains(".schema.json")));
+    }
+
+    [Fact]
+    public async Task RunAsync_WithMixedJsonAndMd_ListsBoth()
+    {
+        // Arrange: mix of .json and .md
+        File.WriteAllText(Path.Combine(_tempSchemasDir, "db1.schema.json"), "{}");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/db2.schema.md");
+
+        var command = new ListSchemasCommand(_display);
+        var args = new[] { "ls" };
+
+        // Act
+        await command.RunAsync(args);
+
+        // Assert
+        Assert.True(_display.ContainsAnyMessage("db1"));
+        Assert.True(_display.ContainsAnyMessage("db2"));
+    }
+
+    [Fact]
+    public async Task RunAsync_JsonSchemaActive_ShowsActiveMarker()
+    {
+        // Arrange
+        File.WriteAllText(Path.Combine(_tempSchemasDir, "prod.schema.json"), "{}");
+        File.WriteAllText(Path.Combine(_tempSchemasDir, "staging.schema.json"), "{}");
+
+        // Set active schema
+        var activePointerDir = Path.Combine(TestFileHelper.GetTempPath(), ".prs");
+        Directory.CreateDirectory(activePointerDir);
+        await File.WriteAllTextAsync(
+            Path.Combine(activePointerDir, "active.txt"), "prod.schema.json");
+
+        var command = new ListSchemasCommand(_display);
+        var args = new[] { "ls" };
+
+        // Act
+        await command.RunAsync(args);
+
+        // Assert
+        Assert.True(_display.ContainsAnyMessage("prod (active)"));
+        Assert.True(_display.AllMessages.Any(m => m.Contains("staging") && !m.Contains("(active)")));
     }
 
     public void Dispose()

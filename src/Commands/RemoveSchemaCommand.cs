@@ -18,15 +18,25 @@ internal class RemoveSchemaCommand(IDisplay display) : ICommand
 		}
 
 		string name = Global.SafeFileName(args[1]);
-		string target = name.EndsWith(".schema.md", StringComparison.OrdinalIgnoreCase)
-			? name
-			: name + ".schema.md";
-		string path = Path.Combine(Global.SchemasDirectory, target);
+		string jsonTarget = name.EndsWith(".schema.json", StringComparison.OrdinalIgnoreCase) ? name : name + ".schema.json";
+		string mdTarget = name.EndsWith(".schema.md", StringComparison.OrdinalIgnoreCase) ? name : name + ".schema.md";
+
+		string target = jsonTarget;
+		string path = Path.Combine(Global.SchemasDirectory, jsonTarget);
 
 		if (!File.Exists(path))
 		{
-			_display.ShowError("Schema not found.");
-			return;
+			string mdPath = Path.Combine(Global.SchemasDirectory, mdTarget);
+			if (File.Exists(mdPath))
+			{
+				target = mdTarget;
+				path = mdPath;
+			}
+			else
+			{
+				_display.ShowError("Schema not found.");
+				return;
+			}
 		}
 
 		// if removing active schema, clear active pointer

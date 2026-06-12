@@ -1,4 +1,6 @@
+using System.Text.Json;
 using PRS.Commands;
+using PRS.Database;
 using PRS.FileHandle;
 using PRS.Tests.TestHelpers;
 using Xunit;
@@ -30,13 +32,13 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_CreatesMarkdownSchemaFile()
+    public async Task RunAsync_CreatesJsonSchemaFile()
     {
         // Arrange
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.json");
         var args = new[] { "dds", schemaName };
 
         // Act
@@ -48,13 +50,13 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_CreatesValidMarkdownDocument()
+    public async Task RunAsync_CreatesValidJsonDocument()
     {
         // Arrange
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.json");
         var args = new[] { "dds", schemaName };
 
         // Act
@@ -62,10 +64,14 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
 
         // Assert
         var content = await File.ReadAllTextAsync(schemaFilePath);
-        Assert.Contains("# Database Schema", content);
-        Assert.Contains("## Connection String", content);
-        Assert.Contains("## Tables", content);
-        Assert.Contains("## Stored Procedures", content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var schema = JsonSerializer.Deserialize<JsonSchemaModel>(content, options);
+
+        Assert.NotNull(schema);
+        Assert.Equal("Server=localhost;Database=TestDB;Integrated Security=true;", schema.ConnectionString);
+        Assert.NotEmpty(schema.Tables);
+        Assert.NotEmpty(schema.Tables.SelectMany(t => t.Columns));
+        Assert.NotEmpty(schema.StoredProcedures);
     }
 
     [Fact]
@@ -75,7 +81,7 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.json");
         var args = new[] { "dds", schemaName };
 
         // Act
@@ -83,9 +89,13 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
 
         // Assert
         var content = await File.ReadAllTextAsync(schemaFilePath);
-        Assert.Contains("### Users", content);
-        Assert.Contains("### Orders", content);
-        Assert.Contains("### Products", content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var schema = JsonSerializer.Deserialize<JsonSchemaModel>(content, options);
+
+        Assert.NotNull(schema);
+        Assert.Contains(schema.Tables, t => t.TableName == "Users");
+        Assert.Contains(schema.Tables, t => t.TableName == "Orders");
+        Assert.Contains(schema.Tables, t => t.TableName == "Products");
     }
 
     [Fact]
@@ -95,7 +105,7 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.json");
         var args = new[] { "dds", schemaName };
 
         // Act
@@ -103,9 +113,13 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
 
         // Assert
         var content = await File.ReadAllTextAsync(schemaFilePath);
-        Assert.Contains("### Users", content);
-        Assert.Contains("UserId", content);
-        Assert.Contains("UserName", content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var schema = JsonSerializer.Deserialize<JsonSchemaModel>(content, options);
+
+        Assert.NotNull(schema);
+        var allColumns = schema.Tables.SelectMany(t => t.Columns.Select(c => new { t.TableName, c.ColumnName }));
+        Assert.Contains(allColumns, c => c.TableName == "Users" && c.ColumnName == "UserId");
+        Assert.Contains(allColumns, c => c.TableName == "Users" && c.ColumnName == "UserName");
     }
 
     [Fact]
@@ -115,7 +129,7 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.json");
         var args = new[] { "dds", schemaName };
 
         // Act
@@ -123,9 +137,16 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
 
         // Assert
         var content = await File.ReadAllTextAsync(schemaFilePath);
-        Assert.Contains("### Orders", content);
-        Assert.Contains("FK_Orders_Users", content);
-        Assert.Contains("→ Users.UserId", content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var schema = JsonSerializer.Deserialize<JsonSchemaModel>(content, options);
+
+        Assert.NotNull(schema);
+        var ordersTable = schema.Tables.FirstOrDefault(t => t.TableName == "Orders");
+        Assert.NotNull(ordersTable);
+        var fkColumn = ordersTable.Columns.FirstOrDefault(c => c.ColumnName == "UserId");
+        Assert.NotNull(fkColumn);
+        Assert.Equal("Users", fkColumn.ReferencedTableName);
+        Assert.Equal("UserId", fkColumn.ReferencedColumnName);
     }
 
     [Fact]
@@ -135,7 +156,7 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.json");
         var args = new[] { "dds", schemaName };
 
         // Act
@@ -143,8 +164,11 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
 
         // Assert
         var content = await File.ReadAllTextAsync(schemaFilePath);
-        Assert.Contains("## Stored Procedures", content);
-        Assert.Contains("- sp_GetUsers", content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var schema = JsonSerializer.Deserialize<JsonSchemaModel>(content, options);
+
+        Assert.NotNull(schema);
+        Assert.Contains("sp_GetUsers", schema.StoredProcedures);
     }
 
     [Fact]
@@ -183,19 +207,43 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         var mockDb = MockDatabase.CreateTestData();
         var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
         var schemaName = "testdb";
-        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.md");
+        var schemaFilePath = Path.Combine(_tempSchemasDir, $"{schemaName}.schema.json");
         var args = new[] { "dds", schemaName };
 
         // Create existing file
-        await File.WriteAllTextAsync(schemaFilePath, "# Old Data");
+        await File.WriteAllTextAsync(schemaFilePath, "{\"connectionString\": \"old\"}");
 
         // Act
         await command.RunAsync(args);
 
         // Assert
         var content = await File.ReadAllTextAsync(schemaFilePath);
-        Assert.DoesNotContain("# Old Data", content);
-        Assert.Contains("# Database Schema", content);
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var schema = JsonSerializer.Deserialize<JsonSchemaModel>(content, options);
+
+        Assert.NotNull(schema);
+        Assert.Equal("Server=localhost;Database=TestDB;Integrated Security=true;", schema.ConnectionString);
+    }
+
+    [Fact]
+    public async Task RunAsync_SetsActiveSchemaPointer()
+    {
+        // Arrange
+        var mockDb = MockDatabase.CreateTestData();
+        var command = new DumpDatabaseSchemaCommand(_display, mockDb, _fileProvider);
+        var schemaName = "testdb";
+        var expectedPointerValue = $"{schemaName}.schema.json";
+        var args = new[] { "dds", schemaName };
+
+        // Act
+        await command.RunAsync(args);
+
+        // Assert
+        var activePointerPath = Path.Combine(TestFileHelper.GetTempPath(), ".prs", "active.txt");
+        Assert.True(File.Exists(activePointerPath), "Active pointer file should be created");
+
+        var activeName = (await File.ReadAllTextAsync(activePointerPath)).Trim();
+        Assert.Equal(expectedPointerValue, activeName);
     }
 
     public void Dispose()
@@ -203,4 +251,3 @@ public class DumpDatabaseSchemaCommandTests : IDisposable
         TestFileHelper.CleanupTempFiles();
     }
 }
-

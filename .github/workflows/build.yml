@@ -56,14 +56,14 @@ jobs:
         Write-Host "Current PackageVersion: $package_version"
     
         $version_parts = $package_version -split '\.'  
-        $pmajor, $pminor, $pbuild, $prevision = $version_parts
-        $prevision = [int]$prevision + 1
-        $new_package_version = "$pmajor.$pminor.$pbuild.$prevision"
+        $pmajor, $pminor, $pbuild = $version_parts
+        $pbuild = [int]$pbuild + 1
+        $new_package_version = "$pmajor.$pminor.$pbuild"
         Write-Host "New PackageVersion: $new_package_version"
     
         (Get-Content $xml_file) -replace '<PackageVersion>.*<\/PackageVersion>', "<PackageVersion>$new_package_version</PackageVersion>" | Set-Content $xml_file
 
-        echo "branch_name=update-package-version-$prevision" >> $env:GITHUB_ENV
+        echo "branch_name=update-package-version-$pbuild" >> $env:GITHUB_ENV
         echo "new_package_version=$new_package_version" >> $env:GITHUB_ENV
 
     - name: Create Temporary Branch

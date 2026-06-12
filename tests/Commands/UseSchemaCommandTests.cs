@@ -97,9 +97,30 @@ public class UseSchemaCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_CreatesActivePointerFile()
+    public async Task RunAsync_WithJsonSchemaFile_SwitchesActiveSchema()
     {
-        // Arrange
+        // Arrange: create a .json schema file
+        var jsonPath = Path.Combine(_tempSchemasDir, "testdb.schema.json");
+        File.WriteAllText(jsonPath, "{\"connectionString\":\"\",\"tables\":[],\"storedProcedures\":[]}");
+
+        var command = new UseSchemaCommand(_display);
+        var args = new[] { "use", "testdb" };
+
+        // Act
+        await command.RunAsync(args);
+
+        // Assert: should find the .json file
+        Assert.True(_display.ContainsAnyMessage("Active schema switched to: testdb"));
+        Assert.False(_display.ContainsError("Schema not found"));
+    }
+
+    [Fact]
+    public async Task RunAsync_BothJsonAndMdExist_PrefersJson()
+    {
+        // Arrange: create both .json and .md
+        File.WriteAllText(
+            Path.Combine(_tempSchemasDir, "testdb.schema.json"),
+            "{\"connectionString\":\"\",\"tables\":[],\"storedProcedures\":[]}");
         TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb.schema.md");
 
         var command = new UseSchemaCommand(_display);
@@ -109,11 +130,12 @@ public class UseSchemaCommandTests : IDisposable
         await command.RunAsync(args);
 
         // Assert
-        var activePointerPath = Path.Combine(TestFileHelper.GetTempPath(), ".prs", "active.txt");
-        Assert.True(File.Exists(activePointerPath), "Active pointer file should be created");
+        Assert.True(_display.ContainsAnyMessage("Active schema switched to: testdb"));
 
-        var activeSchemaName = await File.ReadAllTextAsync(activePointerPath);
-        Assert.Contains("testdb", activeSchemaName);
+        // Verify pointer points to .json
+        var activePointerPath = Path.Combine(TestFileHelper.GetTempPath(), ".prs", "active.txt");
+        var activeName = File.ReadAllText(activePointerPath).Trim();
+        Assert.EndsWith(".schema.json", activeName);
     }
 
     public void Dispose()

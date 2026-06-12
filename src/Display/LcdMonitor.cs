@@ -6,6 +6,13 @@ namespace PRS.Display;
 
 internal class LcdMonitor : IDisplay
 {
+    private readonly IAnsiConsole _ansiConsole;
+
+    public LcdMonitor(IAnsiConsole ansiConsole = null)
+    {
+        _ansiConsole = ansiConsole ?? AnsiConsole.Console;
+    }
+
     public void DisplayColumns(IEnumerable<ColumnModel> models, OutputFormat format = OutputFormat.Table)
     {
         if (format != OutputFormat.Table)
@@ -52,7 +59,7 @@ internal class LcdMonitor : IDisplay
         t.Border = TableBorder.Rounded;
         t.Caption = new TableTitle($"{models.Count()} records above");
 
-        AnsiConsole.Write(t);
+        _ansiConsole.Write(t);
     }
 
     public void DisplayTableSchema(IEnumerable<ColumnModel> columns, string tableName, OutputFormat format = OutputFormat.Table)
@@ -75,7 +82,10 @@ internal class LcdMonitor : IDisplay
             return;
         }
 
-        List<string> properties = typeof(TableModel).GetProperties().Select(p => p.Name).ToList();
+        List<string> properties = typeof(TableModel).GetProperties()
+            .Select(p => p.Name)
+            .Where(name => name != nameof(TableModel.TableSchema))
+            .ToList();
 
         Table t = new();
 
@@ -86,13 +96,13 @@ internal class LcdMonitor : IDisplay
 
         foreach (TableModel model in models)
         {
-            t.AddRow(model.TableName,
-                     model.TableType);
+            t.AddRow(model.TableName ?? string.Empty,
+                     model.TableType ?? string.Empty);
         }
 
         t.Border = TableBorder.Rounded;
 
-        AnsiConsole.Write(t);
+        _ansiConsole.Write(t);
     }
 
     public void DisplayStoredProcedures(IEnumerable<string> procedures, OutputFormat format = OutputFormat.Table)
@@ -117,7 +127,7 @@ internal class LcdMonitor : IDisplay
         t.Border = TableBorder.Rounded;
         t.Caption = new TableTitle($"{list.Count} records above");
 
-        AnsiConsole.Write(t);
+        _ansiConsole.Write(t);
     }
 
     public void ShowError(string message)

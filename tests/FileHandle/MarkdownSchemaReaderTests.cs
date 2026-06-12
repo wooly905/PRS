@@ -231,6 +231,35 @@ Server=localhost;Database=TestDB;Integrated Security=true;
     }
 
     [Fact]
+    public async Task ReadColumnsAsync_ParsesDuplicateColumnsWithDifferentForeignKeysCorrectly()
+    {
+        // Arrange
+        var content = @"# Database Schema
+## Tables
+### TableA
+- **Type**: BASE TABLE
+- **Columns**:
+  - StatusId (int, NOT NULL, Position: 1)
+    - **FK**: FK_TableA_StatusId → StatusTypes.StatusId
+
+### TableB
+- **Type**: BASE TABLE
+- **Columns**:
+  - StatusId (int, NOT NULL, Position: 1)
+";
+
+        File.WriteAllText(_tempFilePath, content);
+        using var reader = new MarkdownSchemaReader(_tempFilePath);
+
+        // Act
+        var columnsB = await reader.ReadColumnsForTableAsync("TableB");
+        var statusColB = columnsB.First(c => c.ColumnName == "StatusId");
+
+        // Assert
+        Assert.Equal(string.Empty, statusColB.ForeignKeyName);
+    }
+
+    [Fact]
     public void Constructor_ThrowsFileNotFoundException_WhenFileDoesNotExist()
     {
         // Arrange

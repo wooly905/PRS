@@ -89,16 +89,60 @@ public class RemoveSchemaCommandTests : IDisposable
     }
 
     [Fact]
-    public async Task RunAsync_WithNullArguments_ShowsError()
+    public async Task RunAsync_WithJsonSchema_RemovesJsonFile()
     {
-        // Arrange
+        // Arrange: create a .json schema
+        var jsonPath = Path.Combine(_tempSchemasDir, "testdb.schema.json");
+        File.WriteAllText(jsonPath, "{\"connectionString\":\"\",\"tables\":[],\"storedProcedures\":[]}");
+        Assert.True(File.Exists(jsonPath));
+
         var command = new RemoveSchemaCommand(_display);
+        var args = new[] { "remove", "testdb" };
 
         // Act
-        await command.RunAsync(null);
+        await command.RunAsync(args);
 
         // Assert
-        Assert.True(_display.ContainsError("Argument mismatch"));
+        Assert.False(File.Exists(jsonPath), "JSON schema file should be removed");
+        Assert.True(_display.ContainsAnyMessage("removed"));
+    }
+
+    [Fact]
+    public async Task RunAsync_BothJsonAndMdExist_RemovesJson()
+    {
+        // Arrange: create both
+        var jsonPath = Path.Combine(_tempSchemasDir, "testdb.schema.json");
+        File.WriteAllText(jsonPath, "{}");
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb.schema.md");
+        var mdPath = Path.Combine(_tempSchemasDir, "testdb.schema.md");
+
+        var command = new RemoveSchemaCommand(_display);
+        var args = new[] { "remove", "testdb" };
+
+        // Act
+        await command.RunAsync(args);
+
+        // Assert: JSON removed, MD still exists
+        Assert.False(File.Exists(jsonPath));
+        Assert.True(File.Exists(mdPath));
+    }
+
+    [Fact]
+    public async Task RunAsync_RemovingActiveSchema_ClearsActivePointer()
+    {
+        // Arrange: create schema and set it as active
+        TestFileHelper.CopyTestFile("test.schema.md", ".prs/schemas/testdb.schema.md");
+        Global.SetActiveSchema("testdb.schema.md");
+
+        var command = new RemoveSchemaCommand(_display);
+        var args = new[] { "remove", "testdb" };
+
+        // Act
+        await command.RunAsync(args);
+
+        // Assert: active pointer should be cleared
+        var activeName = Global.GetActiveSchemaName();
+        Assert.True(string.IsNullOrWhiteSpace(activeName));
     }
 
     public void Dispose()

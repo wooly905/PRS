@@ -17,7 +17,7 @@ public class ListTablesCommandTests
     public async Task RunAsync_ArgumentMismatch_ShowsError()
     {
         var command = new ListTablesCommand(_mockDisplay.Object, _mockFileProvider.Object);
-        string[] args = ["prs", "lt", "extra_arg"];
+        string[] args = ["lt", "extra_arg"];
 
         await command.RunAsync(args);
 
@@ -29,7 +29,7 @@ public class ListTablesCommandTests
     public async Task RunAsync_DdlFormat_RejectsFormat()
     {
         var command = new ListTablesCommand(_mockDisplay.Object, _mockFileProvider.Object);
-        string[] args = ["prs", "lt", "-f", "ddl"];
+        string[] args = ["lt", "-f", "ddl"];
 
         await command.RunAsync(args);
 
@@ -46,7 +46,7 @@ public class ListTablesCommandTests
         try
         {
             var command = new ListTablesCommand(_mockDisplay.Object, _mockFileProvider.Object);
-            string[] args = ["prs", "lt"];
+            string[] args = ["lt"];
 
             await command.RunAsync(args);
 
@@ -82,11 +82,116 @@ public class ListTablesCommandTests
             _mockFileProvider.Setup(p => p.GetSchemaReader(tempFile)).Returns(_mockSchemaReader.Object);
 
             var command = new ListTablesCommand(_mockDisplay.Object, _mockFileProvider.Object);
-            string[] args = ["prs", "lt"];
+            string[] args = ["lt"];
 
             await command.RunAsync(args);
 
             _mockDisplay.Verify(d => d.DisplayTables(tables, OutputFormat.Table), Times.Once);
+        }
+        finally
+        {
+            if (Directory.Exists(tempPath)) Directory.Delete(tempPath, true);
+            Environment.SetEnvironmentVariable("APPDATA", originalAppData);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_WithJsonFormat_DisplaysTablesInJson()
+    {
+        var originalAppData = Environment.GetEnvironmentVariable("APPDATA");
+        var tempPath = Path.Combine(Path.GetTempPath(), "PRS.Tests", Guid.NewGuid().ToString());
+        Environment.SetEnvironmentVariable("APPDATA", tempPath);
+
+        var schemaDir = Path.Combine(tempPath, ".prs", "schemas");
+        Directory.CreateDirectory(schemaDir);
+        var tempFile = Path.Combine(schemaDir, "schema.md");
+        File.WriteAllText(tempFile, "# Schema");
+
+        try
+        {
+            var tables = new List<TableModel>
+            {
+                new() { TableSchema = "dbo", TableName = "Users", TableType = "BASE TABLE" }
+            };
+
+            _mockSchemaReader.Setup(r => r.ReadTablesAsync()).ReturnsAsync(tables);
+            _mockFileProvider.Setup(p => p.GetSchemaReader(tempFile)).Returns(_mockSchemaReader.Object);
+
+            var command = new ListTablesCommand(_mockDisplay.Object, _mockFileProvider.Object);
+            string[] args = ["lt", "-f", "json"];
+
+            await command.RunAsync(args);
+
+            _mockDisplay.Verify(d => d.DisplayTables(tables, OutputFormat.Json), Times.Once);
+        }
+        finally
+        {
+            if (Directory.Exists(tempPath)) Directory.Delete(tempPath, true);
+            Environment.SetEnvironmentVariable("APPDATA", originalAppData);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_WithTextFormat_DisplaysTablesInText()
+    {
+        var originalAppData = Environment.GetEnvironmentVariable("APPDATA");
+        var tempPath = Path.Combine(Path.GetTempPath(), "PRS.Tests", Guid.NewGuid().ToString());
+        Environment.SetEnvironmentVariable("APPDATA", tempPath);
+
+        var schemaDir = Path.Combine(tempPath, ".prs", "schemas");
+        Directory.CreateDirectory(schemaDir);
+        var tempFile = Path.Combine(schemaDir, "schema.md");
+        File.WriteAllText(tempFile, "# Schema");
+
+        try
+        {
+            var tables = new List<TableModel>
+            {
+                new() { TableSchema = "dbo", TableName = "Users", TableType = "BASE TABLE" }
+            };
+
+            _mockSchemaReader.Setup(r => r.ReadTablesAsync()).ReturnsAsync(tables);
+            _mockFileProvider.Setup(p => p.GetSchemaReader(tempFile)).Returns(_mockSchemaReader.Object);
+
+            var command = new ListTablesCommand(_mockDisplay.Object, _mockFileProvider.Object);
+            string[] args = ["lt", "-f", "text"];
+
+            await command.RunAsync(args);
+
+            _mockDisplay.Verify(d => d.DisplayTables(tables, OutputFormat.Text), Times.Once);
+        }
+        finally
+        {
+            if (Directory.Exists(tempPath)) Directory.Delete(tempPath, true);
+            Environment.SetEnvironmentVariable("APPDATA", originalAppData);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_NoTablesFound_ShowsNothingFound()
+    {
+        var originalAppData = Environment.GetEnvironmentVariable("APPDATA");
+        var tempPath = Path.Combine(Path.GetTempPath(), "PRS.Tests", Guid.NewGuid().ToString());
+        Environment.SetEnvironmentVariable("APPDATA", tempPath);
+
+        var schemaDir = Path.Combine(tempPath, ".prs", "schemas");
+        Directory.CreateDirectory(schemaDir);
+        var tempFile = Path.Combine(schemaDir, "schema.md");
+        File.WriteAllText(tempFile, "# Schema");
+
+        try
+        {
+            _mockSchemaReader.Setup(r => r.ReadTablesAsync())
+                .ReturnsAsync(new List<TableModel>());
+            _mockFileProvider.Setup(p => p.GetSchemaReader(tempFile))
+                .Returns(_mockSchemaReader.Object);
+
+            var command = new ListTablesCommand(_mockDisplay.Object, _mockFileProvider.Object);
+            string[] args = ["lt"];
+
+            await command.RunAsync(args);
+
+            _mockDisplay.Verify(d => d.ShowInfo("Nothing found."), Times.Once);
         }
         finally
         {

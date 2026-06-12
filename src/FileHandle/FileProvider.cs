@@ -1,4 +1,4 @@
-﻿namespace PRS.FileHandle;
+namespace PRS.FileHandle;
 
 internal class FileProvider : IFileProvider
 {
@@ -13,14 +13,22 @@ internal class FileProvider : IFileProvider
         return new SchemaFileWriter(file);
     }
 
-    // New high-level interfaces for schema reading/writing (Markdown format)
+    // New high-level interfaces for schema reading/writing (JSON or Markdown format)
     public ISchemaReader GetSchemaReader(string file)
     {
+        if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            return new JsonSchemaReader(file);
+        }
         return new MarkdownSchemaReader(file);
     }
 
     public ISchemaWriter GetSchemaWriter(string file)
     {
+        if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            return new JsonSchemaWriter(file);
+        }
         return new MarkdownSchemaWriter(file);
     }
 }

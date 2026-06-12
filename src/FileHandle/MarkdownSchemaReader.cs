@@ -105,14 +105,15 @@ internal class MarkdownSchemaReader : ISchemaReader
         string currentTableType = string.Empty;
         List<ColumnModel> currentColumns = new();
 
-        foreach (var line in _lines)
+        for (int i = 0; i < _lines.Count; i++)
         {
+            var line = _lines[i];
             var trimmedLine = line.Trim();
 
             // Parse connection string
             if (trimmedLine.Equals("```") && connectionString == string.Empty)
             {
-                var nextLineIndex = _lines.IndexOf(line) + 1;
+                var nextLineIndex = i + 1;
                 if (nextLineIndex < _lines.Count)
                 {
                     var nextLine = _lines[nextLineIndex].Trim();
@@ -187,11 +188,10 @@ internal class MarkdownSchemaReader : ISchemaReader
                 var columnLine = line.TrimStart().Substring(2); // Remove "- " from the start
                 
                 // Check if next line contains FK information
-                var currentIndex = _lines.IndexOf(line);
                 string fkInfo = string.Empty;
-                if (currentIndex + 1 < _lines.Count)
+                if (i + 1 < _lines.Count)
                 {
-                    var nextLine = _lines[currentIndex + 1].Trim();
+                    var nextLine = _lines[i + 1].Trim();
                     if (nextLine.StartsWith("- **FK**: "))
                     {
                         fkInfo = nextLine.Substring(10); // Remove "- **FK**: "

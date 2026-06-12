@@ -1,4 +1,4 @@
-﻿using PRS.Database;
+using PRS.Database;
 using PRS.Display;
 using PRS.FileHandle;
 
@@ -47,9 +47,9 @@ internal class DumpDatabaseSchemaCommand(IDisplay display, IDatabase database, I
 
 		// build schema file name from user-provided schema name and write all data
 		string baseName = Global.SafeFileName(args[1]);
-		string schemaFileName = baseName.EndsWith(".schema.md", StringComparison.OrdinalIgnoreCase)
+		string schemaFileName = baseName.EndsWith(".schema.json", StringComparison.OrdinalIgnoreCase)
 			? baseName
-			: baseName + ".schema.md";
+			: baseName + ".schema.json";
 		string schemaFilePath = Path.Combine(Global.SchemasDirectory, schemaFileName);
 
 		// overwrite if exists

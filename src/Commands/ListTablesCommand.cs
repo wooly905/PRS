@@ -15,7 +15,7 @@ internal class ListTablesCommand(IDisplay display, IFileProvider fileProvider) :
 
         if (CommandHelper.RejectDdlFormat(format, _display)) return;
 
-        if (cleanArgs == null || cleanArgs.Length != 2)
+        if (cleanArgs == null || cleanArgs.Length != 1)
         {
             _display.ShowError("Argument mismatch");
             _display.ShowInfo("prs lt [-f table|json|text]");

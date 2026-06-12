@@ -1,8 +1,8 @@
-﻿namespace PRS;
+namespace PRS;
 
 internal static class Global
 {
-    public static string SchemaFileName => "schema.md";
+    public static string SchemaFileName => "schema.json";
     public static string ConnectionStringFileName => "prs.txt";
     public static string SchemaFileDirectory => Path.Combine(Environment.GetEnvironmentVariable("APPDATA"), ".prs");
     public static string SchemasDirectory => Path.Combine(SchemaFileDirectory, "schemas");
@@ -74,7 +74,7 @@ internal static class Global
         string server = GetFirst(kv, ["Server", "Data Source", "Addr", "Address", "Network Address"]) ?? "server";
         string database = GetFirst(kv, ["Initial Catalog", "Database"]) ?? "database";
 
-        string safe = $"{SafeFileName(server)}_{SafeFileName(database)}.schema.md";
+        string safe = $"{SafeFileName(server)}_{SafeFileName(database)}.schema.json";
         return safe;
     }
 
@@ -110,7 +110,7 @@ internal static class Global
     {
         try
         {
-            // If pointer exists and target exists under schemas directory, use it
+            // 1. If pointer exists and target exists under schemas directory, use it
             string activeName = GetActiveSchemaName();
             if (!string.IsNullOrWhiteSpace(activeName))
             {
@@ -119,13 +119,43 @@ internal static class Global
                 {
                     return activePath;
                 }
+
+                // If pointer points to a .json that doesn't exist, check if a .md version exists
+                if (activeName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    string mdName = activeName[..^5] + ".md";
+                    string mdPath = Path.Combine(SchemasDirectory, mdName);
+                    if (File.Exists(mdPath))
+                    {
+                        return mdPath;
+                    }
+                }
             }
 
-            // Backward compatibility: legacy single-file path
-            string legacyPath = Path.Combine(SchemaFileDirectory, SchemaFileName);
-            if (File.Exists(legacyPath))
+            // 2. Backward compatibility: legacy single-file path (JSON first, then MD)
+            string legacyJsonPath = Path.Combine(SchemaFileDirectory, "schema.json");
+            if (File.Exists(legacyJsonPath))
             {
-                return legacyPath;
+                return legacyJsonPath;
+            }
+
+            string legacyMdPath = Path.Combine(SchemaFileDirectory, "schema.md");
+            if (File.Exists(legacyMdPath))
+            {
+                return legacyMdPath;
+            }
+
+            // 3. Default to schemas directory (JSON first, then MD)
+            string schemasJsonPath = Path.Combine(SchemasDirectory, "schema.json");
+            if (File.Exists(schemasJsonPath))
+            {
+                return schemasJsonPath;
+            }
+
+            string schemasMdPath = Path.Combine(SchemasDirectory, "schema.md");
+            if (File.Exists(schemasMdPath))
+            {
+                return schemasMdPath;
             }
 
             // Default to schemas directory with default schema name
