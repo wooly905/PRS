@@ -28,7 +28,7 @@
 
         <PackageId>wooly905.prs</PackageId>
         <Version>1.2.7</Version>
-        <PackageVersion>1.2.7</PackageVersion>
+        <PackageVersion>1.2.8</PackageVersion>
         <Authors>Bruce Lee</Authors>
         <AssemblyName>prs</AssemblyName>
 		<Description>A schema query tool for your database in Microsoft SQL Server</Description>
